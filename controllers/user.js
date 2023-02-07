@@ -38,9 +38,9 @@ createUser : (req, res) => {
         return res.status(401).json({ error });
       }
       if (!result) {
-        return res.status(401).json({ message: 'Incorrect password' });
+        return res.status(401).json({ message: 'Incorrect password'});
       }
-      return res.status(200).json({ message: 'User logged in successfully' });
+      return res.status(200).json({ message: 'User logged in successfully',user});
     });
   });
 }
