@@ -65,17 +65,29 @@ transporter.sendMail(mailOptions, (error, info) => {
     });
   },
   verifyEmail: (req, res) => {
-    const token = req.params.token
+    const token = req.params.token;
     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Invalid token" });
+        if (err.name === "TokenExpiredError") {
+          User.findOneAndDelete({ Email: decoded.email }, (err, user) => {
+            if (err) {
+              return res.status(500).json({ error: err, message: "Deletion error" });
+            }
+            if (!user) {
+              return res.status(401).json({ message: "User not found" });
+            }
+            return res.status(200).json({ message: "User deleted due to expired token" });
+          });
+        } else {
+          return res.status(401).json({ message: "Invalid token" });
+        }
       }
       User.findOneAndUpdate(
         { Email: decoded.email },
         { $set: { emailverified: true } },
         (err, user) => {
           if (err) {
-            return res.status(500).json({ error: err ,message: "verification error"});
+            return res.status(500).json({ error: err, message: "Verification error" });
           }
           if (!user) {
             return res.status(401).json({ message: "User not found" });
@@ -85,6 +97,7 @@ transporter.sendMail(mailOptions, (error, info) => {
       );
     });
   },
+  
   
 
   loginUser: (req, res) => {
