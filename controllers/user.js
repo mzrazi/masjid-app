@@ -43,6 +43,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILER_PASSWORD
   } 
 });
+console.log(process.env.MAILER_EMAIL);
 
 const mailOptions = {
   from: '"masjid app" masjidappcc@gmail.com',
@@ -74,7 +75,7 @@ transporter.sendMail(mailOptions, (error, info) => {
         { $set: { emailverified: true } },
         (err, user) => {
           if (err) {
-            return res.status(500).json({ error: err });
+            return res.status(500).json({ error: err ,message: "verification error"});
           }
           if (!user) {
             return res.status(401).json({ message: "User not found" });
