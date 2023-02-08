@@ -7,7 +7,7 @@ const dbConnect = require('./config/connection');
 var hbs = require('express-handlebars')
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
-
+require('dotenv').config()
 var app = express();
 
 // view engine setup
