@@ -39,9 +39,9 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: 'masjidappcc@gmail.com',
-    pass: 'xEt2WCQyNu4d'
-  }
+    user: process.env.MAILER_EMAIL,
+    pass: process.env.MAILER_PASSWORD
+  } 
 });
 
 const mailOptions = {
