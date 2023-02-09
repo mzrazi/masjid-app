@@ -44,7 +44,7 @@ module.exports={
           from: '"masjid app" masjidappcc@gmail.com',
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address: http://localhost:3000/verify-email/${token}`
+          text: `Please click the following link to verify your email address: http://3.7.71.236/verify-email/${token}`
         };
     
         await transporter.sendMail(mailOptions);
@@ -86,7 +86,7 @@ module.exports={
           from: '"masjid app" masjidappcc@gmail.com',
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address: http://localhost:3000/verify-email/${token}`
+          text: `Please click the following link to verify your email address: http://3.7.71.236/verify-email/${token}`
         };
         
         await transporter.sendMail(mailOptions);
