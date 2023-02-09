@@ -5,7 +5,7 @@ const userController = require('../controllers/usercontrol');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index');
+  res.render('user/index');
 });
 
 router.post('/signup', userController.createUser);

@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="row">
+    <table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <th>Family Name</th>
+      <th>Owner</th>
+      <th>Members</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each families}}
+      <tr>
+        <td>{{this.familyName}}</td>
+        <td>{{this.owner}}</td>
+        <td>{{this.members}}</td>
+        <td><a href="#" class="btn btn-primary btn-sm">See Details</a></td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+  </div>
+</div>
