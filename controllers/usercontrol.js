@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/usermodel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
@@ -41,7 +41,7 @@ module.exports={
         });
     
         const mailOptions = {
-          from: '"masjid app" masjidappcc@gmail.com',
+          from: '"masjid app" masjidapp1@zohomail.in',
           to: userdata.Email,
           subject: 'Verify your email address',
           text: `Please click the following link to verify your email address: http://3.7.71.236/verify-email/${token}`
@@ -83,7 +83,7 @@ module.exports={
           }
         });
         const mailOptions = {
-          from: '"masjid app" masjidappcc@gmail.com',
+          from: '"masjid app" masjidapp1@zohomail.in',
           to: userdata.Email,
           subject: 'Verify your email address',
           text: `Please click the following link to verify your email address: http://3.7.71.236/verify-email/${token}`
@@ -93,7 +93,7 @@ module.exports={
         
         return res.status(201).json({ 
           message: 'User created, verification email sent', 
-          user 
+          user  
         });
       }
      }catch (error) {

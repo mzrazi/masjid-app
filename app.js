@@ -5,10 +5,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const dbConnect = require('./config/connection');
 var hbs = require('express-handlebars')
-var userRouter = require('./routes/user');
-var adminRouter = require('./routes/admin');
+const bodyParser = require('body-parser');
+
 require('dotenv').config()
 var app = express();
+app.use(bodyParser.json());
+
+var userRouter = require('./routes/user');
+var adminRouter = require('./routes/admin');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
