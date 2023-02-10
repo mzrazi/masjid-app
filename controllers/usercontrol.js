@@ -2,6 +2,7 @@ const User = require('../models/usermodel');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
+var event=require('../models/event')
 
 module.exports={
   createUser: async (req, res) => {
@@ -168,7 +169,20 @@ module.exports={
         return res.status(200).json({ message: "Login successful", user});
       });
     });
-  }
+  },
+
+
+
+  viewevents:(req,res)=>{
+
+    event.find({}, function(err, events) {
+        if (err) {
+          return res.status(500).send(err);
+        }
+    
+        res.status(200).json(events);
+      });
+    }
 }  
 
 

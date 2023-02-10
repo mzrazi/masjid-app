@@ -5,6 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const dbConnect = require('./config/connection');
 const exphbs = require('express-handlebars');
+const Handlebars = require('handlebars')
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+
+
 const bodyParser = require('body-parser');
 
 require('dotenv').config()
@@ -14,12 +18,16 @@ app.use(bodyParser.json());
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
 
+
 // view engine setup
 app.engine('hbs', exphbs.engine({
   extname: 'hbs',
   defaultLayout: 'layout',
   layoutsDir: __dirname + '/views/layouts',
-  partialsDir: __dirname + '/views/partials'
+  partialsDir: __dirname + '/views/partials',
+  runtimeOptions:{allowProtoPropertiesByDefault:true,
+    allowedProtoMethodsByDefault:true}
+ 
 }))
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');

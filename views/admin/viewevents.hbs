@@ -1,0 +1,33 @@
+<div class="container"> 
+    <div class="col-md-12">
+        <div class="row">
+            <h1></h1>
+            <table class="table table-striped">
+  <thead>
+
+    <tr>
+      <th scope="col">No.</th>
+      <th scope="col">Event</th>
+      <th scope="col">Description</th>
+      <th scope="col">Date</th>
+      <th scope="col">Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each events}}
+      <tr>
+        <th scope="row">{{@index}}</th>
+        <td>{{title}}</td>
+        <td>{{description}}</td>
+        <td>{{date}}</td>
+        <td><img src="{{imagePath}}" alt="" width="50" height="50"></td>
+
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+
+</div>
+</div>
+</div>
