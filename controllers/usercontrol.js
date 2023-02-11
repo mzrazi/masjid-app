@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
 var event=require('../models/event')
+const axios=require('axios')
 
 module.exports={
   createUser: async (req, res) => {
@@ -173,16 +174,110 @@ module.exports={
 
 
 
-  viewevents:(req,res)=>{
+  // viewevents:(req,res)=>{
 
-    event.find({}, function(err, events) {
-        if (err) {
-          return res.status(500).send(err);
-        }
+  //   event.find({}, function(err, events) {
+  //       if (err) {
+  //         return res.status(500).send(err);
+  //       }
     
-        res.status(200).json(events);
-      });
+  //       res.status(200).json(events);
+  //     });
+  //   }
+
+
+ viewevents:async(req,res)=> {
+    try {
+      
+      const prayerTimesResponse = await axios.get('https://api.aladhan.com/v1/calendarByCity?city=Kochi&country=India&method=2');
+  
+      var events = await event.find({})
+      const prayerTimes = prayerTimesResponse.data
+
+
+      console.log(events);
+      console.log(prayerTimes);
+     res.status(200).json({events,prayerTimes})
+    } catch (error) {
+
+      console.error(error);
+      res.status(500).json(error)
     }
+  },
+
+  editProfile: async (req, res) => {
+    try {
+      // Find user by email
+      var updates = req.body;
+      var email = req.body.email;
+
+      console.log(updates);
+      const user = await User.findOne({ email: email });
+      if (!user) {
+        res.status(404).json({ message: "user not found" });
+      }
+  
+      // Update user details
+      const updatedUser = await User.findOneAndUpdate(
+        { email: email },
+        { $set:updates},
+        { new: true }
+      );
+  
+      res.status(200).json({ message: "Profile updated successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error updating profile" });
+    }
+  },
+
+ 
+
+  changePassword: async (req, res) => {
+    try {
+      console.log(req.body);
+  
+      var email = req.params.email;
+      var Password=req.body.Password
+      var newPassword = req.body.newPassword;
+  
+      var curuser = await User.findOne({ Email: email }).exec();
+    
+      var hash = curuser.Password;
+      
+  
+      // Check if the current password provided by the user matches the password stored in the database
+      const isPasswordCorrect = await bcrypt.compare(Password, hash);
+      console.log(isPasswordCorrect);
+      if (!isPasswordCorrect) {
+        return res.status(404).json({
+          error: "current password is incorrect"
+        });
+      }
+  
+      // Hash the new password
+      var hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Update the user's password in the database
+      await User.findOneAndUpdate(
+        { Email: email },
+        { $set: { Password:hashedPassword } },
+        { new: true }
+      );
+  
+      res.status(200).json({
+        message: "password updated succesfully"
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "password update error"});
+    }
+  }
+  
+  
+  
+  
 }  
 
 
