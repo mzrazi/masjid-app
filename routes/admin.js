@@ -74,4 +74,10 @@ router.get('/eventsview', (req, res) => {
 });
 
 
+
+router.get('/addimage',(req,res)=>{
+  res.render("admin/addimage",{admin:true})
+})
+
+
 module.exports = router;
