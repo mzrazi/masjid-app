@@ -191,15 +191,15 @@ module.exports={
  viewevents:async(req,res)=> {
     try {
       
-      const prayerTimesResponse = await axios.get('https://api.aladhan.com/v1/calendarByCity?city=Kochi&country=India&method=2');
+      const date = new Date();
+  const dateString = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+  const response = await axios.get(`http://api.aladhan.com/v1/timingsByCity?city=Edapalli&country=India&method=3&school=0&state=Kerala&date_or_timestamp=${dateString}`);
+  const timings = response.data.data.timings;
+  console.log(timings);
   
       var events = await event.find({})
-      const prayerTimes = prayerTimesResponse.data
-
-
-      console.log(events);
-      console.log(prayerTimes);
-     res.status(200).json({events,prayerTimes})
+     
+     res.status(200).json({events,timings})
     } catch (error) {
 
       console.error(error);
@@ -237,7 +237,7 @@ module.exports={
 
   changePassword: async (req, res) => {
     try {
-      console.log(req.body);
+      
   
       var email = req.params.email;
       var Password=req.body.Password
@@ -277,20 +277,50 @@ module.exports={
     }
   },
   addfamily:(req,res)=>{
-    const { FirstName,LastName,Age,Phone,Gender, User } = req.body;
-  const newFamilyMember = new Family({ FirstName,LastName,Age,Phone,Gender,User });
-  newFamilyMember
-    .save()
-    .then(familyMember => {
-      res.json({ success: true, familyMember });
+    User.findById(req.body.User)
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      const newFamilyMember = new Family({
+        FirstName: req.body.FirstName,
+        LastName: req.body.LastName,
+        Age: req.body.Age,
+        Phone: req.body.Phone,
+        Gender: req.body.Gender,
+        User: user._id
+      });
+      return newFamilyMember.save()
+      .then(familyMember => {
+        user.Family.push(familyMember._id);
+        return user.save()
+        .then(() => res.json({ success: true, message: 'Family member added successfully' }))
+        .catch(err => res.status(500).json({ success: false, message: 'Error adding family member', error: err }));
+      })
+      .catch(err => res.status(500).json({ success: false, message: 'Error creating family member', error: err }));
     })
-    .catch(err => {
-      res.json({ success: false, err });
-    });
+    .catch(err => res.status(500).json({ success: false, message: 'Error finding user', error: err }));
+    
   },
 
   viewall:(req,res)=>{
-    User.findById(mongoose.Types.ObjectId(req.body.User))
+    User.find()
+    .populate({
+        path: "Family",
+        model: "Family"
+    })
+    .then(user => {
+      res.json({ success: true, user });
+    })
+    .catch(err => {
+      console.log(err);
+      res.json({ success: false, err });
+      
+    });
+  },
+
+  viewuserfamily:(req,res)=>{
+    User.find(req.body.User)
     .populate({
         path: "Family",
         model: "Family"
