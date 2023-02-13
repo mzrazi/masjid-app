@@ -1,7 +1,8 @@
 var express = require('express');
-const { viewevents, editProfile, changePassword } = require('../controllers/usercontrol');
+const { viewevents, editProfile, changePassword, addfamily, viewall } = require('../controllers/usercontrol');
 var router = express.Router();
 const userController = require('../controllers/usercontrol');
+
 
 
 /* GET home page. */
@@ -15,6 +16,8 @@ router.get('/verify-email/:token',userController.verifyEmail)
 router.get('/viewevents',viewevents)
 router.post('/editprofile',editProfile)
 router.post("/changepassword/:email", changePassword)
+router.post("/add-family",addfamily)
+router.get("/view-family",viewall)
 
 
 module.exports = router; 

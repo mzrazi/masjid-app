@@ -1,9 +1,11 @@
-const User = require('../models/usermodel');
+
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
 var event=require('../models/event')
 const axios=require('axios')
+const { Family, User } = require('../models/usermodel');
+const  mongoose=require('mongoose')
 
 module.exports={
   createUser: async (req, res) => {
@@ -273,7 +275,36 @@ module.exports={
       res.status(500).json({
         error: "password update error"});
     }
+  },
+  addfamily:(req,res)=>{
+    const { FirstName,LastName,Age,Phone,Gender, User } = req.body;
+  const newFamilyMember = new Family({ FirstName,LastName,Age,Phone,Gender,User });
+  newFamilyMember
+    .save()
+    .then(familyMember => {
+      res.json({ success: true, familyMember });
+    })
+    .catch(err => {
+      res.json({ success: false, err });
+    });
+  },
+
+  viewall:(req,res)=>{
+    User.findById(mongoose.Types.ObjectId(req.body.User))
+    .populate({
+        path: "Family",
+        model: "Family"
+    })
+    .then(user => {
+      res.json({ success: true, user });
+    })
+    .catch(err => {
+      console.log(err);
+      res.json({ success: false, err });
+      
+    });
   }
+
   
   
   

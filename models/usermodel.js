@@ -1,13 +1,47 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const FamilySchema = new Schema({
+    FirstName: {
+      type: String,
+      required: true
+    },
+    LastName:{
+      type:String,
+      required:true
+    },
+    Age: {
+      type: String,
+      required: true
+    },
+    Phone:{
+      type:String,
+      required:true
+    },
+    Gender:{
+      type:String,
+      required:true
+    },
+    User: {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }
+  })
+  
+
+  
 const userSchema = new Schema({
     Name: { type: String, required: true },
     Address: { type: String, required: true },
     Phone: { type:String, required: true },
    Email: { type: String, required: true, unique: true },
    Password: { type: String, required: true },
-   emailverified: { type: Boolean, default: false}
+   emailverified: { type: Boolean, default: false},
+   Family: [{ type: Schema.Types.ObjectId, ref: 'Family' }]
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = {
+    Family: mongoose.model("Family", FamilySchema),
+    User: mongoose.model('User', userSchema),
+  };
+  
