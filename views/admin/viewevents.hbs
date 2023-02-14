@@ -11,6 +11,7 @@
       <th scope="col">Description</th>
       <th scope="col">Date</th>
       <th scope="col">Image</th>
+      <th scope="col">actions</th>
     </tr>
   </thead>
   <tbody>
@@ -21,6 +22,9 @@
     <td>{{description}}</td>
     <td>{{date}}</td>
     <td><img src="{{imagePath}}" alt="" width="50" height="50"></td>
+    <td><a href="/admin/editevent/{{_id}}" class="btn btn-primary">edit</a>      <a class="btn btn-danger" href="/admin/deletevent/{{_id}}" onclick="return confirm('Are you sure you want to delete this?')">Delete</a>
+
+
   </tr>
 {{/each}}
 

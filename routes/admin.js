@@ -14,7 +14,7 @@ var storage = multer.diskStorage({
     cb(null, 'public/images')
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + '-' + file.originalname)
+    cb(null, file.fieldname + '-' + Date.now() + '-' + Math.random()+ path.extname(file.originalname))
   }
 });
 var upload = multer({ storage: storage });
@@ -73,7 +73,7 @@ router.get('/eventsview', (req, res) => {
   });
 });
 
- 
+
 
 router.get('/addimage',(req,res)=>{
   res.render("admin/addimage",{admin:true})
