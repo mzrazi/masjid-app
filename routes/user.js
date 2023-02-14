@@ -1,5 +1,5 @@
 var express = require('express');
-const { viewevents, editProfile, changePassword, addfamily, viewall } = require('../controllers/usercontrol');
+const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily } = require('../controllers/usercontrol');
 var router = express.Router();
 const userController = require('../controllers/usercontrol');
 
@@ -13,11 +13,12 @@ router.get('/', function(req, res, next) {
 router.post('/signup', userController.createUser);
 router.post('/login', userController.loginUser);
 router.get('/verify-email/:token',userController.verifyEmail)
-router.get('/viewevents',viewevents)
-router.post('/editprofile',editProfile)
-router.post("/changepassword", changePassword)
-router.post("/add-family",addfamily)
-router.get("/view-family",viewall)
+router.get('/view-events',viewevents)
+router.post('/edit-profile',editProfile)
+router.post("/change-password", changePassword)
+router.post("/add-families",addfamily)
+router.get("/view-families",viewall)
+router.get("/user-family",viewuserfamily)
 
 
 module.exports = router; 

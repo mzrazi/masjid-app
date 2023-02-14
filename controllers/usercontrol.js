@@ -266,7 +266,7 @@ module.exports={
     }
   },
   addfamily:(req,res)=>{
-    User.findById(req.body.User)
+    User.findById(req.body.UserId)
     .then(user => {
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found' });
@@ -315,11 +315,11 @@ module.exports={
         model: "Family"
     })
     .then(user => {
-      res.json({ success: true, user });
+     return res.json({ success: true, user });
     })
     .catch(err => {
       console.log(err);
-      res.json({ success: false, err });
+     return res.json({ success: false, err });
       
     });
   }
