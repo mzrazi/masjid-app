@@ -211,22 +211,22 @@ module.exports={
     try {
       // Find user by email
       var updates = req.body;
-      var email = req.body.email;
+      var ID= req.body.Id
 
-      console.log(updates);
-      const user = await User.findOne({ email: email });
+      
+      const user = await User.findById(ID)
       if (!user) {
         res.status(404).json({ message: "user not found" });
       }
   
       // Update user details
       const updatedUser = await User.findOneAndUpdate(
-        { email: email },
+        { _id: ID },
         { $set:updates},
         { new: true }
       );
   
-      res.status(200).json({ message: "Profile updated successfully" });
+      res.status(200).json({ message: "Profile updated successfully",updatedUser });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error updating profile" });
@@ -239,11 +239,11 @@ module.exports={
     try {
       
   
-      var email = req.params.email;
+      var id = req.body.UserId;
       var Password=req.body.Password
       var newPassword = req.body.newPassword;
   
-      var curuser = await User.findOne({ Email: email }).exec();
+      var curuser = await User.findOne({ _id:id }).exec();
     
       var hash = curuser.Password;
       
@@ -262,7 +262,7 @@ module.exports={
   
       // Update the user's password in the database
       await User.findOneAndUpdate(
-        { Email: email },
+        { _id:id },
         { $set: { Password:hashedPassword } },
         { new: true }
       );
@@ -320,7 +320,7 @@ module.exports={
   },
 
   viewuserfamily:(req,res)=>{
-    User.find(req.body.User)
+    User.find(req.body.UserId)
     .populate({
         path: "Family",
         model: "Family"
