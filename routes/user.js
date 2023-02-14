@@ -15,7 +15,7 @@ router.post('/login', userController.loginUser);
 router.get('/verify-email/:token',userController.verifyEmail)
 router.get('/viewevents',viewevents)
 router.post('/editprofile',editProfile)
-router.post("/changepassword/:email", changePassword)
+router.post("/changepassword", changePassword)
 router.post("/add-family",addfamily)
 router.get("/view-family",viewall)
 

@@ -34,6 +34,8 @@ const userSchema = new Schema({
     Name: { type: String, required: true },
     Address: { type: String, required: true },
     Phone: { type:String, required: true },
+    Age:{type:String,required:true},
+    Gender:{type:String,required:true},
    Email: { type: String, required: true, unique: true },
    Password: { type: String, required: true },
    emailverified: { type: Boolean, default: false},
