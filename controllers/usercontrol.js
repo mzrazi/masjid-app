@@ -167,10 +167,7 @@ module.exports={
         if (!result) {
           return res.status(401).json({ message: "Incorrect password" });
         }
-        // // Create a JSON web token
-        // const token = jwt.sign({ Email: user.Email }, process.env.SECRET_KEY, {
-        //   expiresIn: "1h"
-        // });
+       
         return res.status(200).json({ message: "Login successful", user});
       });
     });
@@ -178,17 +175,7 @@ module.exports={
 
 
 
-  // viewevents:(req,res)=>{
-
-  //   event.find({}, function(err, events) {
-  //       if (err) {
-  //         return res.status(500).send(err);
-  //       }
-    
-  //       res.status(200).json(events);
-  //     });
-  //   }
-
+ 
 
  viewevents:async(req,res)=> {
     try {
@@ -213,12 +200,11 @@ module.exports={
     try {
       // Find user by email
       var updates = req.body;
-      var ID= req.body.Id
-
-      
+      var ID= req.body.UserId
+  
       const user = await User.findById(ID)
       if (!user) {
-        res.status(404).json({ message: "user not found" });
+        return res.status(404).json({ message: "user not found" });
       }
   
       // Update user details
@@ -228,12 +214,13 @@ module.exports={
         { new: true }
       );
   
-      res.status(200).json({ message: "Profile updated successfully",updatedUser });
+      return res.status(200).json({ message: "Profile updated successfully" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Error updating profile" });
+      return res.status(500).json({ message: "Error updating profile" });
     }
-  },
+  }
+  ,
 
  
 
