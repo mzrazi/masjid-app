@@ -64,6 +64,8 @@ module.exports={
           Name: userdata.Name,
           Address: userdata.Address,
           Phone: userdata.Phone,
+          Age:userdata.Age,
+          Gender:userdata.Gender,
           Email: userdata.Email,
           Password: hash,
           emailverified: false
