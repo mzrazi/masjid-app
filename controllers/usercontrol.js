@@ -214,7 +214,7 @@ module.exports={
         { new: true }
       );
   
-      return res.status(200).json({ message: "Profile updated successfully" });
+      return res.status(200).json({ message: "Profile updated successfully",updatedUser});
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error updating profile" });
