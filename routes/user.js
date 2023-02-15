@@ -1,5 +1,5 @@
 var express = require('express');
-const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily } = require('../controllers/usercontrol');
+const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily, userdetails } = require('../controllers/usercontrol');
 var router = express.Router();
 const userController = require('../controllers/usercontrol');
 
@@ -19,6 +19,7 @@ router.post("/change-password", changePassword)
 router.post("/add-families",addfamily)
 router.get("/view-families",viewall)
 router.get("/user-family",viewuserfamily)
+router.get("/user-details",userdetails)
 
 
 module.exports = router; 

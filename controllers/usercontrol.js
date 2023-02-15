@@ -19,7 +19,7 @@ module.exports={
         emailverified: true 
       });
       if (existingVerifiedUser) {
-        return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({status:400, message: 'User already exists' });
       }
     
       // Check if the email already exists but is not verified
@@ -52,7 +52,7 @@ module.exports={
         };
     
         await transporter.sendMail(mailOptions);
-        return res.status(201).json({ 
+        return res.status(201).json({ status:201,
           message: 'User already exists, a new verification email has been sent', 
           user: existingUser 
         });
@@ -97,13 +97,13 @@ module.exports={
         
         await transporter.sendMail(mailOptions);
         
-        return res.status(201).json({ 
+        return res.status(201).json({ status:201,
           message: 'User created, verification email sent', 
           user  
         });
       }
      }catch (error) {
-            return res.status(500).json({ message: error.message });
+            return res.status(500).json({status:500, message: error.message });
        }
         },
         
@@ -123,10 +123,10 @@ module.exports={
             if (!user) {
               return res.status(401).json({ message: "User not found" });
             }
-            return res.status(200).json({ message: "User deleted due to expired token" });
+            return res.status(200).json({status:200, message: "User deleted due to expired token" });
           });
         } else {
-          return res.status(401).json({ message: "Invalid token" });
+          return res.status(401).json({status:401, message: "Invalid token" });
         }
       }
       User.findOneAndUpdate(
@@ -134,12 +134,12 @@ module.exports={
         { $set: { emailverified: true } },
         (err, user) => {
           if (err) {
-            return res.status(500).json({ error: err, message: "Verification error" });
+            return res.status(500).json({status:500, error: err, message: "Verification error" });
           }
           if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            return res.status(401).json({status:401, message: "User not found" });
           }
-          return res.status(200).json({ message: "Email verified successfully" });
+          return res.status(200).json({status:200, message: "Email verified successfully" });
         }
       );
     });
@@ -152,23 +152,23 @@ module.exports={
     User.findOne({ Email }, (err, user) => {
       if (err) {
         console.log(err);
-        return res.status(500).json({ error: err });
+        return res.status(500).json({status:500, message:"email error",error: err });
       }
       if (!user) {
-        return res.status(401).json({ message: "User not found" });
+        return res.status(401).json({status:401, message: "User not found" });
       }
       if (!user.emailverified) {
-        return res.status(401).json({ message: "Email not verified" });
+        return res.status(401).json({status:401, message: "Email not verified" });
       }
       bcrypt.compare(Password, user.Password, (error, result) => {
         if (error) {
-          return res.status(401).json({ error });
+          return res.status(401).json({status:401,message:"bcrypt error",err: error });
         }
         if (!result) {
-          return res.status(401).json({ message: "Incorrect password" });
+          return res.status(401).json({status:401, message: "Incorrect password" });
         }
        
-        return res.status(200).json({ message: "Login successful", user});
+        return res.status(200).json({status:200, message: "Login successful", user});
       });
     });
   },
@@ -186,13 +186,16 @@ module.exports={
   const timings = response.data.data.timings;
   console.log(timings);
   
-      var events = await event.find({})
-     
-     res.status(200).json({events,timings})
+  var events = await event.find({});
+  events.forEach(event => {
+    event.imagePath = `http://3.7.71.236:3000/${event.imagePath}`;
+  });
+  res.status(200).json({status:200,message:"succesful",events,timings})
+  
     } catch (error) {
 
       console.error(error);
-      res.status(500).json(error)
+      res.status(500).json({status:500,message:"unsuccesful",err:error})
     }
   },
 
@@ -204,7 +207,7 @@ module.exports={
   
       const user = await User.findById(ID)
       if (!user) {
-        return res.status(404).json({ message: "user not found" });
+        return res.status(404).json({status:404, message: "user not found" });
       }
   
       // Update user details
@@ -214,10 +217,10 @@ module.exports={
         { new: true }
       );
   
-      return res.status(200).json({ message: "Profile updated successfully",updatedUser});
+      return res.status(200).json({status:200, message: "Profile updated successfully",updatedUser});
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Error updating profile" });
+      return  res.status(500).json({status:500,message:"error updating profile",err:error});
     }
   }
   ,
@@ -241,8 +244,8 @@ module.exports={
       const isPasswordCorrect = await bcrypt.compare(Password, hash);
       console.log(isPasswordCorrect);
       if (!isPasswordCorrect) {
-        return res.status(404).json({
-          error: "current password is incorrect"
+        return res.status(404).json({status:404,
+          message: "current password is incorrect"
         });
       }
   
@@ -256,24 +259,24 @@ module.exports={
         { new: true }
       );
   
-      res.status(200).json({
+      res.status(200).json({status:200,
         message: "password updated succesfully"
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        error: "password update error"});
+       status:500, message: "password update error"});
     }
   },
   addfamily:(req,res)=>{
     User.findById(req.body.UserId)
     .then(user => {
       if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res.status(404).json({status:404, success: false, message: 'User not found' });
       }
       const newFamilyMember = new Family({
-        FirstName: req.body.FirstName,
-        LastName: req.body.LastName,
+        Firstname: req.body.Firstname,
+        Lastname: req.body.Lastname,
         Age: req.body.Age,
         Phone: req.body.Phone,
         Gender: req.body.Gender,
@@ -283,12 +286,12 @@ module.exports={
       .then(familyMember => {
         user.Family.push(familyMember._id);
         return user.save()
-        .then(() => res.json({ success: true, message: 'Family member added successfully' }))
-        .catch(err => res.status(500).json({ success: false, message: 'Error adding family member', error: err }));
+        .then(() => res.status(200).json({status:200, success: true, message: 'Family member added successfully',newFamilyMember }))
+        .catch(err => res.status(500).json({status:500, success: false, message: 'Error adding family member', error: err }));
       })
-      .catch(err => res.status(500).json({ success: false, message: 'Error creating family member', error: err }));
+      .catch(err => res.status(500).json({status:500, success: false, message: 'Error creating family member', error: err }));
     })
-    .catch(err => res.status(500).json({ success: false, message: 'Error finding user', error: err }));
+    .catch(err => res.status(500).json({status:500, success: false, message: 'Error finding user', error: err }));
     
   },
 
@@ -299,11 +302,11 @@ module.exports={
         model: "Family"
     })
     .then(user => {
-      res.json({ success: true, user });
+      return res.status(200).json({status:200,message:"succesful", user });
     })
     .catch(err => {
       console.log(err);
-      res.json({ success: false, err });
+     return  res.status(500).json({status:500,message:"unsuccesful",error:err});
       
     });
   },
@@ -315,13 +318,27 @@ module.exports={
         model: "Family"
     })
     .then(user => {
-     return res.json({ success: true, user });
+     return  res.status(200).json({status:200,message:"succesful"})
     })
     .catch(err => {
       console.log(err);
-     return res.json({ success: false, err });
+     return  res.status(500).json({status:500,message:"unsuccesful",error:err})
       
     });
+  },
+  userdetails:(req,res)=>{
+
+    var id = req.body.UserId
+    
+    User.findById(id).exec((err, user) => {
+      if (err) {
+        return res.status(500).json({status:500, message: "Error retrieving user" });
+      }
+      return res.status(200).json({status:200,message:"succesful", user });
+    });
+
+    
+
   }
 
   
