@@ -6,6 +6,8 @@ var event=require('../models/event')
 const axios=require('axios')
 const { Family, User } = require('../models/usermodel');
 const  mongoose=require('mongoose')
+const message=require("../models/messagemodel")
+const gallery=require("../models/gallerymodel")
 
 module.exports={
   createUser: async (req, res) => {
@@ -201,7 +203,7 @@ module.exports={
 
   editProfile: async (req, res) => {
     try {
-      // Find user by email
+      // Find user by id
       var updates = req.body;
       var ID= req.body.UserId
   
@@ -339,7 +341,92 @@ module.exports={
 
     
 
-  }
+  },
+  savemessage:(req,res)=>{
+
+    var msg=req.body
+
+    var newmessage=new message({
+      title:msg.title,
+      useremail:msg.email,
+      message:msg.message
+    })
+    try {
+      
+      newmessage.save().then((doc)=>{
+        res.status(200).json({status:200,message:"succesfull"})
+      }).catch((err)=>{
+        res.status(404).json({status:404,message:err.message})
+      })
+    } catch (error) {
+
+      res.status(500).json({status:500,message:"internal error",err:error})
+    }
+
+
+
+  },
+
+  editfamily:async(req,res)=>{
+    try {
+      // Find user by id
+      var updates = req.body;
+      var ID= req.body.memberId
+  
+      const user = await Family.findById(ID)
+      if (!user) {
+        return res.status(404).json({status:404, message: "user not found" });
+      }
+  
+      // Update user details
+      const updatedUser = await Family.findOneAndUpdate(
+        { _id: ID },
+        { $set:updates},
+        { new: true }
+      );
+  
+      return res.status(200).json({status:200, message: "member updated successfully",updatedUser});
+    } catch (error) {
+      console.error(error);
+      return  res.status(500).json({status:500,message:"error updating member",err:error});
+    }
+
+},
+deletefamily:(req,res)=>{
+  Family.findById(req.body.memberId)
+  .then(familyMember => {
+    if (!familyMember) {
+      return res.status(404).json({status: 404, success: false, message: 'Family member not found'});
+    }
+    User.findByIdAndUpdate(familyMember.User, { $pull: { Family: familyMember._id }})
+      .then(() => {
+        return familyMember.remove()
+          .then(() => res.status(200).json({status: 200, success: true, message: 'Family member deleted successfully'}))
+          .catch(err => res.status(500).json({status: 500, success: false, message: 'Error deleting family member', error: err}));
+      })
+      .catch(err => res.status(500).json({status: 500, success: false, message: 'Error removing family member ID from User', error: err}));
+  })
+  .catch(err => res.status(500).json({status: 500, success: false, message: 'Error finding family member', error: err}));
+
+
+      
+},
+
+getimages:async(req,res)=>{
+  try{
+  var images= await gallery.find({});
+  images.forEach(image => {
+    image.imagePath = `http://3.7.71.236:3000/${image.imagePath}`;
+  });
+  res.status(200).json({status:200,message:"succesful",images})
+  
+    } catch (error) {
+
+      console.error(error);
+      res.status(500).json({status:500,message:"unsuccesful",err:error})
+    }
+}
+
 
   
   

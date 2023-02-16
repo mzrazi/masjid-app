@@ -3,9 +3,10 @@ var router = express.Router();
 var multer = require('multer');
 var mongoose=require('mongoose')
 var event=require("../models/event");
-const { viewevents } = require('../controllers/admincontrol');
+const { viewevents, getevent } = require('../controllers/admincontrol');
 const json = require('json');
 const path=require('path')
+const gallery=require("../models/gallerymodel")
 
 
 
@@ -66,7 +67,7 @@ router.get('/eventsview', (req, res) => {
     
   
     
-    res.render('admin/viewevents', { events ,admin:true});
+  res.render('admin/viewevents', { events ,admin:true});
   }).catch(err => {
     console.error(err);
     res.status(500).send({ error: "Error fetching events" });
@@ -75,9 +76,46 @@ router.get('/eventsview', (req, res) => {
 
 
 
-router.get('/addimage',(req,res)=>{
-  res.render("admin/addimage",{admin:true})
+router.get('/add-image',async(req,res)=>{
+  var images=await gallery.find({}).exec()
+  res.render("admin/addimage",{admin:true,images})
 })
 
+router.get("/delete-event/:id",async(req,res)=>{
+   try {
+  const id = req.params.id;
+  
+  await event.findByIdAndDelete(id);
+  
+  res.redirect('/admin/events');
+} catch (err) {
+  // handle errors
+  console.error(err);
+  res.status(500).send('An error occurred while deleting the event.');
+}
+})
+router.get("/edit-event/:id",async(req,res)=>{
+
+var event = await getevent(req.params.id)
+
+
+res.render("admin/editevent",{event})
+})
+router.post('/save-image', upload.single('file'), function(req, res) {
+ 
+  console.log(req.file);
+     const newimage = new gallery({
+     
+      imagePath: path.normalize(req.file.path).replace(/\\/g, '/').replace("public", ""),
+      
+    })
+    newimage.save(function(err, event) {
+      if (err) {
+        return res.status(500).send(err);
+      }
+  
+      res.redirect('/admin/add-image')
+  })
+})
 
 module.exports = router;
