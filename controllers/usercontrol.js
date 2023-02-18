@@ -8,6 +8,8 @@ const { Family, User } = require('../models/usermodel');
 const  mongoose=require('mongoose')
 const message=require("../models/messagemodel")
 const gallery=require("../models/gallerymodel")
+const { v4: uuidv4 } = require('uuid');
+
 
 module.exports={
   createUser: async (req, res) => {
@@ -50,7 +52,7 @@ module.exports={
           from: '"masjid app" masjidapp1@zohomail.in',
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address: http://3.7.71.236:3000/verify-email/${token}`
+          text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
         };
     
         await transporter.sendMail(mailOptions);
@@ -94,7 +96,7 @@ module.exports={
           from: '"masjid app" masjidapp1@zohomail.in',
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address: http://3.7.71.236:3000/verify-email/${token}`
+          text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
         };
         
         await transporter.sendMail(mailOptions);
@@ -314,13 +316,13 @@ module.exports={
   },
 
   viewuserfamily:(req,res)=>{
-    User.find(req.body.UserId)
+    User.findById(req.body.UserId)
     .populate({
         path: "Family",
         model: "Family"
     })
     .then(user => {
-     return  res.status(200).json({status:200,message:"succesful"})
+     return  res.status(200).json({status:200,message:"succesful",user})
     })
     .catch(err => {
       console.log(err);
@@ -425,6 +427,113 @@ getimages:async(req,res)=>{
       console.error(error);
       res.status(500).json({status:500,message:"unsuccesful",err:error})
     }
+},
+
+forgotpassword:async (req, res) => {
+    const { email } = req.body;
+    console.log(req.body);
+  
+    try {
+      // Find user by email
+      const user = await User.findOne({ email });
+  
+      // If user not found, return error
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Generate password reset token
+      const resetToken = uuidv4();
+  
+      // Update user's reset token and expiration time in the database
+      user.resetToken = resetToken;
+      user.resetTokenExpiration = Date.now() + 3600000; // 1 hour from now
+      await user.save();
+  
+      // Send password reset email to user
+      const transporter = nodemailer.createTransport({
+        host: 'smtp-relay.sendinblue.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.MAILER_EMAIL,
+          pass: process.env.MAILER_PASS
+        }
+      });
+  
+      const mailOptions = {
+        from: process.env.MAILER_EMAIL,
+        to: email,
+        subject: 'Reset Your Password',
+        html: `<p>Please click <a href="${process.env.APP_URL}/verify-token/${resetToken}">here</a> to reset your password.</p>`,
+      };
+  
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: 'Failed to send password reset email' });
+        } else {
+          console.log('Password reset email sent:', info.response);
+          return res.status(200).json({ message: 'Password reset email sent' });
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Server error' });
+    }
+},
+
+verifytoken:async (req, res) => {
+  const { resetToken } = req.params;
+
+  try {
+    // Find user by reset token
+    const user = await User.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
+
+    // If user not found or reset token expired, redirect to forgot password page with error message
+    if (!user) {
+      return res.send('error=invalid-token');
+    }
+    console.log(resetToken);
+    // Render password reset page with reset token
+    res.render('user/reset-password', { resetToken });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+},
+
+
+resetpassword:async (req, res) => {
+  const newPassword = req.body.password;
+ const resetToken=req.params.resetToken
+  console.log(newPassword);
+
+  try {
+    // Find user by reset token
+    const user = await User.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
+    console.log(user)
+    // If user not found or reset token expired, return error
+    if (!user) {
+      return res.status(404).json({ message: 'Invalid reset token' });
+    }
+
+    // Hash new password
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password and reset token in the database
+    user.Password = hashedPassword;
+    user.resetToken = null;
+    user.resetTokenExpiration = null;
+    await user.save();
+
+    // Redirect to login page with success message
+    return res.send('password reset success');
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
 }
 
 

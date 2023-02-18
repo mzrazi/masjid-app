@@ -38,6 +38,8 @@ const userSchema = new Schema({
     Gender:{type:String,required:true},
    Email: { type: String, required: true, unique: true },
    Password: { type: String, required: true },
+   resetToken:{ type:String },
+   resetTokenExpiration:{type:String},
    emailverified: { type: Boolean, default: false},
    Family: [{ type: Schema.Types.ObjectId, ref: 'Family' }]
 });

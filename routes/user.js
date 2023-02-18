@@ -1,5 +1,6 @@
 var express = require('express');
-const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily, userdetails, savemessage, editfamily, deletefamily, getimages } = require('../controllers/usercontrol');
+const { reset } = require('nodemon');
+const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily, userdetails, savemessage, editfamily, deletefamily, getimages, forgotpassword, verifytoken, resetpassword } = require('../controllers/usercontrol');
 var router = express.Router();
 const userController = require('../controllers/usercontrol');
 
@@ -24,6 +25,9 @@ router.post("/message",savemessage)
 router.put("/edit-member",editfamily)
 router.delete("/delete-member",deletefamily)
 router.get("/gallery",getimages)
+router.post("/forgot-password",forgotpassword),
+router.get("/verify-token/:resetToken",verifytoken)
+router.post("/reset-password/:resetToken",resetpassword)
 
 
 module.exports = router; 
