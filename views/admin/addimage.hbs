@@ -22,17 +22,17 @@
  
   </div>
  <div class="container my-5">
-    <h1 class="text-center" style="font-size:xx-large; text-decoration: underline;">Gallery</h1>
-    <div class="card-columns">
-      {{#each images}}
-        <div class="card-body">
-          <img class="card-img-top" src="{{imagePath}}" alt="img">
-          
-        </div>
-      {{/each}}
+  <h1 class="text-center" style="font-size:xx-large; text-decoration: underline;">Gallery</h1>
+  <div class="card-columns">
+    {{#each images}}
+    <div class="card">
+      <img class="card-img-top" src="{{imagePath}}" alt="img">
+      <div class="card-body">
+        <a href="/admin/imagedelete/{{_id}}" class="btn btn-danger">delete</a>
+      </div>
     </div>
-
-  
+    {{/each}}
+  </div>
 </div>
 
 

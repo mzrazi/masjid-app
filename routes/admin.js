@@ -7,7 +7,8 @@ const { viewevents, getevent } = require('../controllers/admincontrol');
 const json = require('json');
 const path=require('path')
 const gallery=require("../models/gallerymodel")
-
+const fs =require("fs")
+const announcemodel=require("../models/announcemodel")
 
 
 var storage = multer.diskStorage({
@@ -117,6 +118,53 @@ router.post('/save-image', upload.single('file'), function(req, res) {
       res.redirect('/admin/add-image')
   })
 })
+
+router.get('/announcements',(req,res)=>{
+  res.render('admin/announcements',{admin:true})
+})
+
+router.get('/imagedelete/:id',async (req, res) => {
+  const id= req.params.id;
+  const galleryitem= await gallery.findById(id).exec()
+  const imagePath=galleryitem.imagePath
+  console.log(imagePath);
+
+  fs.unlink(`./public/${imagePath}`, async(err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Server error');
+    } else {
+      await gallery.findByIdAndDelete(id)
+      res.redirect('/admin/add-image')
+    }
+
+
+  })
+});
+router.post('/announce',(req,res)=>{
+
+  const { title, message } = req.body;
+
+  // Create a new document using the model
+  const newAnnounce = new announcemodel({ title, message });
+
+  // Save the document to the database
+  newAnnounce.save((err) => {
+    if (err) {
+      // Handle any validation errors
+      const validationErrors = Object.values(err.errors).map(error => error.message);
+      res.redirect('error',{message:validationErrors})
+    } else {
+      res.redirect('/admin/announcements');
+    }
+  });
+ 
+})
+router.get('/payments',(req,res)=>{
+
+  res.render('admin/payments',{admin:true})
+})
+
 
 
 
