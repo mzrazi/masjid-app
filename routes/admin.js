@@ -8,7 +8,8 @@ const json = require('json');
 const path=require('path')
 const gallery=require("../models/gallerymodel")
 const fs =require("fs")
-const announcemodel=require("../models/announcemodel")
+const announcemodel=require("../models/announcemodel");
+const { Family, User } = require('../models/usermodel');
 
 
 var storage = multer.diskStorage({
@@ -31,8 +32,15 @@ router.get('/', function(req, res, next) {
 router.get('/home', function(req, res, next) {
   res.render('admin/adminhome',{admin:true})
 });
-router.get('/families', function(req, res, next) {
-  res.render('admin/families',{admin:true})
+router.get('/families',async function(req, res, next) {
+
+  const users = await User.find({});
+  const families = await Promise.all(users.map(async (user) => {
+    const familyLength = user.Family.length;
+    return { ...user.toObject(), familyLength };
+  }));
+  console.log(families);
+  res.render('admin/families',{admin:true,families})
 });
 router.get('/prayer', function(req, res, next) {
   res.render('admin/prayertime',{admin:true})
