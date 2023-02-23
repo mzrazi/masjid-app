@@ -184,17 +184,17 @@ module.exports={
  viewevents:async(req,res)=> {
     try {
       
-      const date = new Date();
-  const dateString = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
-  const response = await axios.get(`http://api.aladhan.com/v1/timingsByCity?city=Edapalli&country=India&method=3&school=0&state=Kerala&date_or_timestamp=${dateString}`);
-  const timings = response.data.data.timings;
-  console.log(timings);
+  //     const date = new Date();
+  // const dateString = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+  // const response = await axios.get(`http://api.aladhan.com/v1/timingsByCity?city=Edapalli&country=India&method=3&school=0&state=Kerala&date_or_timestamp=${dateString}`);
+  // const timings = response.data.data.timings;
+  // console.log(timings);
   
   var events = await event.find({});
   events.forEach(event => {
-    event.imagePath = `http://3.7.71.236:3000/${event.imagePath}`;
+    event.imagePath = `${process.env.APP_URL}${event.imagePath}`;
   });
-  res.status(200).json({status:200,message:"succesful",events,timings})
+  res.status(200).json({status:200,message:"succesful",events})
   
     } catch (error) {
 
@@ -432,7 +432,7 @@ getimages:async(req,res)=>{
   try{
   var images= await gallery.find({});
   images.forEach(image => {
-    image.imagePath = `http://3.7.71.236:3000/${image.imagePath}`;
+    image.imagePath = `${process.env.APP_URL}${image.imagePath}`;
   });
   res.status(200).json({status:200,message:"succesful",images})
   
