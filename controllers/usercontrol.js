@@ -315,35 +315,49 @@ module.exports={
     });
   },
 
-  viewuserfamily:(req,res)=>{
+  viewuserfamily: (req, res) => {
     User.findById(req.body.UserId)
-    .populate({
+      .populate({
         path: "Family",
         model: "Family"
-    })
-    .then(user => {
-     return  res.status(200).json({status:200,message:"succesful",user})
-    })
-    .catch(err => {
-      console.log(err);
-     return  res.status(500).json({status:500,message:"unsuccesful",error:err})
-      
-    });
-  },
+      })
+      .then(user => {
+        if (!user) {
+          return res.status(404).json({
+            status: 404,
+            message: "User not found"
+          });
+        }
+        return res.status(200).json({
+          status: 200,
+          message: "Successful",
+          user
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        return res.status(500).json({
+          status: 500,
+          message: "Unsuccessful,invalid id",
+          error: err
+        });
+      });
+  }
+  ,
   userdetails:(req,res)=>{
-
     var id = req.body.UserId
     
     User.findById(id).exec((err, user) => {
       if (err) {
         return res.status(500).json({status:500, message: "Error retrieving user" });
       }
+      if (!user) {
+        return res.status(404).json({status:404, message: "User not found" });
+      }
       return res.status(200).json({status:200,message:"succesful", user });
     });
-
-    
-
-  },
+  }
+  ,
   savemessage:(req,res)=>{
 
     var msg=req.body
