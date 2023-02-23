@@ -8,7 +8,7 @@ const userController = require('../controllers/usercontrol');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('user/index');
+  res.redirect("/admin")
 });
 
 router.post('/signup', userController.createUser);
@@ -19,8 +19,8 @@ router.put('/edit-profile',editProfile)
 router.post("/change-password", changePassword)
 router.post("/add-families",addfamily)
 router.get("/view-families",viewall)
-router.get("/user-family",viewuserfamily)
-router.get("/user-details",userdetails)
+router.post("/user-family",viewuserfamily)
+router.post("/user-details",userdetails)
 router.post("/message",savemessage)
 router.put("/edit-member",editfamily)
 router.delete("/delete-member",deletefamily)
