@@ -12,6 +12,7 @@ const announcemodel=require("../models/announcemodel");
 const { Family, User } = require('../models/usermodel');
 
 
+
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'public/images')
@@ -27,6 +28,7 @@ var upload = multer({ storage: storage });
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
+ 
   res.render('admin/adminlogin')
 });
 router.get('/home', function(req, res, next) {
@@ -171,7 +173,10 @@ router.post('/announce',(req,res)=>{
 router.get('/payments',(req,res)=>{
 
   res.render('admin/payments',{admin:true})
-})
+}),
+
+
+
 
 
 

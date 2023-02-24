@@ -1,5 +1,6 @@
 var express = require('express');
 const { reset } = require('nodemon');
+const { saveprayertime } = require('../controllers/prayertimecontrol');
 const { viewevents, editProfile, changePassword, addfamily, viewall, viewuserfamily, userdetails, savemessage, editfamily, deletefamily, getimages, forgotpassword, verifytoken, resetpassword } = require('../controllers/usercontrol');
 var router = express.Router();
 const userController = require('../controllers/usercontrol');
@@ -28,6 +29,7 @@ router.get("/gallery",getimages)
 router.post("/forgot-password",forgotpassword),
 router.get("/verify-token/:resetToken",verifytoken)
 router.post("/reset-password/:resetToken",resetpassword)
+router.get('/prayertime',saveprayertime)
 
 
 module.exports = router; 

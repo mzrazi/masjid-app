@@ -9,7 +9,8 @@ const  mongoose=require('mongoose')
 const message=require("../models/messagemodel")
 const gallery=require("../models/gallerymodel")
 const { v4: uuidv4 } = require('uuid');
-
+const prayertime=require("../models/prayertimemodel")
+const moment = require('moment');
 
 module.exports={
   createUser: async (req, res) => {
@@ -184,17 +185,12 @@ module.exports={
  viewevents:async(req,res)=> {
     try {
       
-  //     const date = new Date();
-  // const dateString = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
-  // const response = await axios.get(`http://api.aladhan.com/v1/timingsByCity?city=Edapalli&country=India&method=3&school=0&state=Kerala&date_or_timestamp=${dateString}`);
-  // const timings = response.data.data.timings;
-  // console.log(timings);
-  
+ const prayertimes= await prayertime.find({})
   var events = await event.find({});
   events.forEach(event => {
     event.imagePath = `${process.env.APP_URL}${event.imagePath}`;
   });
-  res.status(200).json({status:200,message:"succesful",events})
+  res.status(200).json({status:200,message:"succesful",events,prayertimes})
   
     } catch (error) {
 
@@ -548,13 +544,18 @@ resetpassword:async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
   }
+},
+
+
+
+
+  
+
+  
+  
+  
+  
+
 }
-
-
-  
-  
-  
-  
-}  
 
 
