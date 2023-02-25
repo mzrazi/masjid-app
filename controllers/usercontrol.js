@@ -66,7 +66,8 @@ module.exports={
         const hash = await bcrypt.hash(userdata.Password, 10);
         // Create a new user
         const user = new User({
-          Name: userdata.Name,
+          FirstName: userdata.FirstName,
+          LastName: userdata.LastName,
           Address: userdata.Address,
           Phone: userdata.Phone,
           Age:userdata.Age,

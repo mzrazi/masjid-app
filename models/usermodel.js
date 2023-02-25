@@ -31,7 +31,8 @@ const FamilySchema = new Schema({
 
   
 const userSchema = new Schema({
-    Name: { type: String, required: true },
+    FirstName: { type: String, required: true },
+    LastName: { type: String, required: true },
     Address: { type: String, required: true },
     Phone: { type:String, required: true },
     Age:{type:String,required:true},
