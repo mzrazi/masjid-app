@@ -191,7 +191,7 @@ const now = moment();
 }
   var events = await event.find({});
   events.forEach(event => {
-    event.imagePath = `${process.env.APP_URL}${event.imagePath}`;
+    event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
   });
   res.status(200).json({status:200,message:"succesful",events,prayertimes})
   
@@ -431,7 +431,7 @@ getimages:async(req,res)=>{
   try{
   var images= await gallery.find({});
   images.forEach(image => {
-    image.imagePath = `${process.env.APP_URL}${image.imagePath}`;
+    image.imagePath = `http://${process.env.APP_URL}${image.imagePath}`;
   });
   res.status(200).json({status:200,message:"succesful",images})
   
