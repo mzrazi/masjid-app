@@ -184,8 +184,11 @@ module.exports={
 
  viewevents:async(req,res)=> {
     try {
-      
- const prayertimes= await prayertime.find({})
+const now = moment();
+ const prayertimes=await prayertime.findOne({ date:now.startOf('day').toDate() });
+ if (!prayertimes) {
+  res.satus(404).json({status:404,message:"not found"})
+}
   var events = await event.find({});
   events.forEach(event => {
     event.imagePath = `${process.env.APP_URL}${event.imagePath}`;
@@ -445,11 +448,11 @@ forgotpassword:async (req, res) => {
   
     try {
       // Find user by email
-      const user = await User.findOne({ email });
-  
+      const user = await User.findOne({ Email:email });
+      console.log(user);
       // If user not found, return error
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({status:404, message: 'User not found' });
       }
   
       // Generate password reset token
@@ -481,15 +484,15 @@ forgotpassword:async (req, res) => {
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error(error);
-          return res.status(500).json({ message: 'Failed to send password reset email' });
+          return res.status(500).json({status:500, message: 'Failed to send password reset email' });
         } else {
           console.log('Password reset email sent:', info.response);
-          return res.status(200).json({ message: 'Password reset email sent' });
+          return res.status(200).json({status:200, message: 'Password reset email sent' });
         }
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: 'Server error' });
+      return res.status(500).json({status:500, message: 'Server error' });
     }
 },
 
@@ -509,7 +512,7 @@ verifytoken:async (req, res) => {
     res.render('user/reset-password', { resetToken });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({status:500, message: 'Server error' });
   }
 },
 
@@ -542,19 +545,26 @@ resetpassword:async (req, res) => {
     return res.send('password reset success');
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({status:500, message: 'Server error' });
   }
 },
 
+// getPrayerTimesForToday : async () => {
+//   try {
+//     const now = moment();
+//     const document = await prayertime.findOne({ date: now.startOf('day').toDate() });
+//     if (!document) {
+//       res.satus(404).json({status:404,message:"not found"})
+//     }
+//    res.status(200).json({satus:200,message:"successfull",document})
+//   } catch (error) {
+//     res.status(500).json({status:500,message:"server error"})
+//     console.error(error);
+//     return null;
+//   }
+// }
 
 
-
-  
-
-  
-  
-  
-  
 
 }
 
