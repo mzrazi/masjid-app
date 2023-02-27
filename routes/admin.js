@@ -170,11 +170,27 @@ router.post('/announce',(req,res)=>{
   });
  
 })
-router.get('/payments',(req,res)=>{
+router.get('/payments/:id',(req,res)=>{
+
+
 
   res.render('admin/payments',{admin:true})
 }),
+router.get('/members/:id',async(req,res)=>{
 
+  var family= await User.findById(req.params.id).populate({
+    path: "Family",
+    model: "Family"
+  })
+ 
+  var familymembers=family.Family
+
+  console.log(familymembers);
+  res.render('admin/members',{admin:true,familymembers})
+}),
+
+
+router.post
 
 
 
