@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
 var event=require('../models/event')
 const axios=require('axios')
-const { Family, User } = require('../models/usermodel');
+const { Family, User, payments } = require('../models/usermodel');
 const  mongoose=require('mongoose')
 const message=require("../models/messagemodel")
 const gallery=require("../models/gallerymodel")
@@ -79,6 +79,14 @@ module.exports={
     
         // Save the user
         await user.save();
+
+        const currentYear = new Date().getFullYear();
+        const paymentSchema = new payments({
+        user: user._id,
+         year: currentYear,
+});
+
+await paymentSchema.save();
     
         // Generate a token
         const token = jwt.sign({ email: userdata.Email }, process.env.SECRET_KEY, {
@@ -188,7 +196,7 @@ module.exports={
 const now = moment();
  const prayertimes=await prayertime.findOne({ date:now.startOf('day').toDate() });
  if (!prayertimes) {
-  res.satus(404).json({status:404,message:"not found"})
+  res.status(404).json({status:404,message:"not found"})
 }
   var events = await event.find({});
   events.forEach(event => {
