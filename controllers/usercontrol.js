@@ -560,35 +560,37 @@ resetpassword:async (req, res) => {
 getuserpayment: (req, res) => {
   const id = req.body.userId;
   const currentYear = new Date().getFullYear();
-payments.find({ user: id, year: currentYear }).exec((err, payment) => {
-  if (err) {
-    if (err.name === 'CastError') {
+
+  User.findById(id, (err, user) => {
+    if (err) {
+      return res.status(500).json({ status: 500, message: "Error retrieving user" });
+    }
+    if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
-    return res.status(500).json({ status: 500, message: "Error retrieving user" });
-  }
-  if (payment.length === 0) {
-    // create a new payment schema for the given year
-    const newPayment = new payments({
-      user: id,
-      year: currentYear,
-      // add any other relevant fields here
-    });
-    newPayment.save((err, savedPayment) => {
+    payments.find({ user: id, year: currentYear }).exec((err, payment) => {
       if (err) {
-        return res.status(500).json({ status: 500, message: "Error creating payment" });
+        return res.status(500).json({ status: 500, message: "Error retrieving payment" });
       }
-      return res.status(201).json({ status: 201, message: "success", savedPayment });
+      if (payment.length === 0) {
+        // create a new payment schema for the given year
+        const newPayment = new payments({
+          user: id,
+          year: currentYear,
+          // add any other relevant fields here
+        });
+        newPayment.save((err, savedPayment) => {
+          if (err) {
+            return res.status(500).json({ status: 500, message: "Error creating payment" });
+          }
+          return res.status(201).json({ status: 201, message: "success", savedPayment });
+        });
+      } else {
+        return res.status(200).json({ status: 200, message: "Successful", payment });
+      }
     });
-  } else {
-    
-    return res.status(200).json({ status: 200, message: "Successful", payment });
-  }
-})
-
-
-
-
+  });
 }
+
 
 }
