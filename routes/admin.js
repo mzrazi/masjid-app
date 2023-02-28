@@ -9,7 +9,7 @@ const path=require('path')
 const gallery=require("../models/gallerymodel")
 const fs =require("fs")
 const announcemodel=require("../models/announcemodel");
-const { Family, User } = require('../models/usermodel');
+const { Family, User, payments } = require('../models/usermodel');
 
 
 
@@ -170,11 +170,26 @@ router.post('/announce',(req,res)=>{
   });
  
 })
-router.get('/payments/:id',(req,res)=>{
+router.get('/payments/:id',async(req,res)=>{
 
-
-
-  res.render('admin/payments',{admin:true})
+const paymentSchema=await payments.find({user:req.params.id})
+ 
+  const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const status = { 
+  jan: paymentSchema.jan, 
+  feb: paymentSchema.feb, 
+  mar: paymentSchema.mar, 
+  apr: paymentSchema.apr, 
+  may: paymentSchema.may, 
+  jun: paymentSchema.jun, 
+  jul: paymentSchema.jul, 
+  aug: paymentSchema.aug, 
+  sep: paymentSchema.sep, 
+  oct: paymentSchema.oct, 
+  nov: paymentSchema.nov, 
+  dec: paymentSchema.dec
+};
+  res.render('admin/payments',{admin:true,status,months})
 }),
 router.get('/members/:id',async(req,res)=>{
 

@@ -1,26 +1,36 @@
 
-    <div class="container my-5">
-  <table class="table">
+     <div class="container my-5">
+  <table class="table">'
+    <h1>{{status}}</h1>
     <thead>
       <tr>
-        <th scope="col">User</th>
-        <th scope="col">Address</th>
-        <th scope="col">Amount</th>
-        <th scope="col">Payment Status</th>
-        <th scope="col">Action</th>
+        <th scope="col">month</th>
+        <th scope="col">current Payment status</th>
+        <th scope="col">Actions</th>
+       
       </tr>
     </thead>
     <tbody>
-      {{#each data}}
-      <tr>
-        <td>{{this.user}}</td>
-        <td>{{this.address}}</td>
-        <td>{{this.amount}}</td>
-        <td>{{this.payment_status}}</td>
-        <td><a href="/edit/{{this._id}}" class="btn btn-primary">Edit</a></td>
-      </tr>
-      {{/each}}
+     {{#each months}}
+  <tr>
+    <td>{{this}}</td>
+    <td>{{lookup ../status this}}</td>
+    <td>
+      <a href="/edit/{{this._id}}" class="btn btn-primary">pending</a>
+      <a href="/edit/{{this._id}}" class="btn btn-danger">Due</a>
+      <a href="/edit/{{this._id}}" class="btn btn-success">paid</a>
+    </td>
+  </tr>
+{{/each}}
+
     </tbody>
   </table>
 </div>
 
+<script>
+ Handlebars.registerHelper('lookup', function(obj, key) {
+  return obj[key];
+});
+
+
+</script>
