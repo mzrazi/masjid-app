@@ -38,19 +38,17 @@ module.exports={
         const token = jwt.sign({ email: userdata.Email }, process.env.SECRET_KEY, {
           expiresIn: "1h"
         });
-        // Send a new email with the new token
         const transporter = nodemailer.createTransport({
-          host: 'smtp.zoho.in',
-          port: 465,
-          secure: true,
+          host: 'smtp-relay.sendinblue.com',
+          port: 587,
+          secure: false,
           auth: {
             user: process.env.MAILER_EMAIL,
-            pass: process.env.MAILER_PASSWORD
+            pass: process.env.MAILER_PASS
           }
         });
-    
         const mailOptions = {
-          from: '"masjid app" masjidapp1@zohomail.in',
+          from: process.env.MAILER_EMAIL,
           to: userdata.Email,
           subject: 'Verify your email address',
           text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
@@ -80,13 +78,30 @@ module.exports={
         // Save the user
         await user.save();
 
+        
+
         const currentYear = new Date().getFullYear();
         const paymentSchema = new payments({
-        user: user._id,
-         year: currentYear,
-});
+          user: user._id,
+          year: currentYear,
+          months: [
+            { month: "jan", status: "pending"},
+            { month: "feb", status: "pending"},
+            { month: "mar", status: "pending"},
+            { month: "apr", status: "pending"},
+            { month: "may", status: "pending"},
+            { month: "jun", status: "pending"},
+            { month: "jul", status: "pending"},
+            { month: "aug", status: "pending"},
+            { month: "sep", status: "pending"},
+            { month: "oct", status: "pending"},
+            { month: "nov", status: "pending"},
+            { month: "dec", status: "pending"},
+          ],
+        });
+        
 
-await paymentSchema.save();
+          await paymentSchema.save();
     
         // Generate a token
         const token = jwt.sign({ email: userdata.Email }, process.env.SECRET_KEY, {
@@ -94,16 +109,17 @@ await paymentSchema.save();
         });
         // Send an email with the token
         const transporter = nodemailer.createTransport({
-          host: 'smtp.zoho.in',
-          port: 465,
-          secure: true,
+          host: 'smtp-relay.sendinblue.com',
+          port: 587,
+          secure: false,
           auth: {
             user: process.env.MAILER_EMAIL,
-            pass: process.env.MAILER_PASSWORD
+            pass: process.env.MAILER_PASS
           }
         });
+      
         const mailOptions = {
-          from: '"masjid app" masjidapp1@zohomail.in',
+          from: process.env.MAILER_EMAIL,
           to: userdata.Email,
           subject: 'Verify your email address',
           text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
@@ -557,40 +573,28 @@ resetpassword:async (req, res) => {
     return res.status(500).json({status:500, message: 'Server error' });
   }
 },
-getuserpayment: (req, res) => {
-  const id = req.body.userId;
+getuserpayment:(req, res) => {
+  const userId = req.body.userId;
   const currentYear = new Date().getFullYear();
 
-  User.findById(id, (err, user) => {
+  User.findById(userId, (err, user) => {
     if (err) {
       return res.status(500).json({ status: 500, message: "Error retrieving user" });
     }
     if (!user) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
-    payments.find({ user: id, year: currentYear }).exec((err, payment) => {
+
+    payments.find({ user: userId, year: currentYear }).exec((err, payment) => {
       if (err) {
         return res.status(500).json({ status: 500, message: "Error retrieving payment" });
       }
-      if (payment.length === 0) {
-        // create a new payment schema for the given year
-        const newPayment = new payments({
-          user: id,
-          year: currentYear,
-          // add any other relevant fields here
-        });
-        newPayment.save((err, savedPayment) => {
-          if (err) {
-            return res.status(500).json({ status: 500, message: "Error creating payment" });
-          }
-          return res.status(201).json({ status: 201, message: "success", savedPayment });
-        });
-      } else {
-        return res.status(200).json({ status: 200, message: "Successful", payment });
-      }
+
+      return res.status(200).json({ status: 200, message: "Success", payment });
     });
   });
 }
+
 
 
 }

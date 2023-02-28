@@ -55,69 +55,20 @@ const PaymentStatusSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  jan: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  feb: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  mar: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  apr: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  may: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  jun: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  jul: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  aug: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  sep: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  oct: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  nov: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
-  dec: {
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'due', 'paid'],
-  },
+  months: [{
+    month: {
+      type: String,
+      enum: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['default', 'pending', 'due', 'paid'],
+      default: 'default',
+      required: true,
+    }
+  }],
 });
-
-
 
 
 
