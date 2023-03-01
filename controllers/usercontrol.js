@@ -207,23 +207,23 @@ module.exports={
 
  
 
- viewevents:async(req,res)=> {
+viewevents:async(req,res)=> {
     try {
 const now = moment();
  const prayertimes=await prayertime.findOne({ date:now.startOf('day').toDate() });
  if (!prayertimes) {
-  res.status(404).json({status:404,message:"not found"})
+ return res.status(404).json({status:404,message:"not found"})
 }
   var events = await event.find({});
   events.forEach(event => {
     event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
   });
-  res.status(200).json({status:200,message:"succesful",events,prayertimes})
+ return  res.status(200).json({status:200,message:"succesful",events,prayertimes})
   
     } catch (error) {
 
       console.error(error);
-      res.status(500).json({status:500,message:"unsuccesful",err:error})
+     return res.status(500).json({status:500,message:"unsuccesful",err:error})
     }
   },
 
