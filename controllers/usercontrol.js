@@ -80,28 +80,28 @@ module.exports={
 
         
 
-        const currentYear = new Date().getFullYear();
-        const paymentSchema = new payments({
-          user: user._id,
-          year: currentYear,
-          months: [
-            { month: "jan", status: "pending"},
-            { month: "feb", status: "pending"},
-            { month: "mar", status: "pending"},
-            { month: "apr", status: "pending"},
-            { month: "may", status: "pending"},
-            { month: "jun", status: "pending"},
-            { month: "jul", status: "pending"},
-            { month: "aug", status: "pending"},
-            { month: "sep", status: "pending"},
-            { month: "oct", status: "pending"},
-            { month: "nov", status: "pending"},
-            { month: "dec", status: "pending"},
-          ],
-        });
+        // const currentYear = new Date().getFullYear();
+        // const paymentSchema = new payments({
+        //   user: user._id,
+        //   year: currentYear,
+        //   months: [
+        //     { month: "jan", status: "pending"},
+        //     { month: "feb", status: "pending"},
+        //     { month: "mar", status: "pending"},
+        //     { month: "apr", status: "pending"},
+        //     { month: "may", status: "pending"},
+        //     { month: "jun", status: "pending"},
+        //     { month: "jul", status: "pending"},
+        //     { month: "aug", status: "pending"},
+        //     { month: "sep", status: "pending"},
+        //     { month: "oct", status: "pending"},
+        //     { month: "nov", status: "pending"},
+        //     { month: "dec", status: "pending"},
+        //   ],
+        // });
         
 
-          await paymentSchema.save();
+        //   await paymentSchema.save();
     
         // Generate a token
         const token = jwt.sign({ email: userdata.Email }, process.env.SECRET_KEY, {
@@ -231,6 +231,7 @@ const now = moment();
     try {
       // Find user by id
       var updates = req.body;
+      console.log(updates);
       var ID= req.body.UserId
   
       const user = await User.findById(ID)
@@ -577,6 +578,8 @@ getuserpayment:(req, res) => {
   const userId = req.body.userId;
   const currentYear = new Date().getFullYear();
 
+  
+
   User.findById(userId, (err, user) => {
     if (err) {
       return res.status(500).json({ status: 500, message: "Error retrieving user" });
@@ -593,7 +596,56 @@ getuserpayment:(req, res) => {
       return res.status(200).json({ status: 200, message: "Success", payment });
     });
   });
-}
+},
+
+
+//  getCurrentAndPastPayments:async(req, res)=> {
+//   const userId = req.query.userId;
+
+//   const currentYear = new Date().getFullYear();
+//   const currentMonth = new Date().getMonth() + 1;
+//   const lastYear = currentYear - 1;
+
+//   // Check if there are previous years in the database
+//   const previousYears = await payments.distinct('year', { user: userId, year: { $lt: currentYear } });
+
+//   // Array of months from current month to January of the current year
+//   const currentYearMonths = [];
+//   for (let i = currentMonth; i >= 1; i--) {
+//     currentYearMonths.push({ month: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i - 1], year: currentYear });
+//   }
+
+//   // Array of months from December of last year to January of last year
+//   const lastYearMonths = [];
+//   for (let i = 11; i >= 0; i--) {
+//     lastYearMonths.push({ month: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i], year: lastYear });
+//   }
+
+//   // Combine the two arrays if there are previous years, otherwise use the current year's months
+//   const months = previousYears.length > 0 ? currentYearMonths.concat(lastYearMonths) : currentYearMonths;
+
+//   // Query the database
+//   const payment = await payments.find({
+//     user: userId,
+//     $or: months.map(month => ({ year: month.year, 'months.month': month.month }))
+//   });
+
+//   // Check if payments are empty
+//   if (payment.length === 0) {
+//     return res.status(404).json({ status: 'error', message: 'No payments found' });
+//   }
+
+//   // Return the result object
+//   return res.status(200).json({
+//     status: 'success',
+//     message: 'Current and past payments retrieved successfully',
+//     payments: payment
+//   });
+// }
+
+
+
+
 
 
 
