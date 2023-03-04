@@ -78,32 +78,7 @@ module.exports={
         // Save the user
         await user.save();
 
-        
-
-        // const currentYear = new Date().getFullYear();
-        // const paymentSchema = new payments({
-        //   user: user._id,
-        //   year: currentYear,
-        //   months: [
-        //     { month: "jan", status: "pending"},
-        //     { month: "feb", status: "pending"},
-        //     { month: "mar", status: "pending"},
-        //     { month: "apr", status: "pending"},
-        //     { month: "may", status: "pending"},
-        //     { month: "jun", status: "pending"},
-        //     { month: "jul", status: "pending"},
-        //     { month: "aug", status: "pending"},
-        //     { month: "sep", status: "pending"},
-        //     { month: "oct", status: "pending"},
-        //     { month: "nov", status: "pending"},
-        //     { month: "dec", status: "pending"},
-        //   ],
-        // });
-        
-
-        //   await paymentSchema.save();
-    
-        // Generate a token
+      
         const token = jwt.sign({ email: userdata.Email }, process.env.SECRET_KEY, {
           expiresIn: "1h"
         });
@@ -203,29 +178,73 @@ module.exports={
     });
   },
 
+viewevents:async(req, res)=> {
+  try {
+    // Retrieve events from the database
+    const events = await event.find({});
+    events.forEach((event) => {
+      event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
+    });
 
+    // Check if current day's prayer time is available in the database
+    const currentDate = moment().format('YYYY-MM-DD');
+    const prayerTime = await prayertime.findOne({ date: currentDate });
 
- 
+    if (prayerTime) {
+      // If prayer time is available, respond with events and prayer time
+      res.json({
+        status: 'success',
+        message: 'Events and prayer time for the current day',
+        data: {
+          events,
+          prayerTime,
+        },
+      });
+    } else {
+      // If prayer time is not available, fetch prayer times for the whole month from the API
+      const url = `https://api.aladhan.com/v1/calendarByCity?city=Kochi&country=India&method=2`;
+      let response;
+      try {
+        response = await axios.get(url);
+      } catch (error) {
+        throw new Error('Failed to fetch prayer times from the API');
+      }
 
-viewevents:async(req,res)=> {
-    try {
-const now = moment();
- const prayertimes=await prayertime.findOne({ date:now.startOf('day').toDate() });
- if (!prayertimes) {
- return res.status(404).json({status:404,message:"not found"})
-}
-  var events = await event.find({});
-  events.forEach(event => {
-    event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
-  });
- return  res.status(200).json({status:200,message:"succesful",events,prayertimes})
-  
-    } catch (error) {
+      // Save prayer times to the database
+      const prayerTimes = response.data.data.map((day) => ({
+        date: moment(day.date.readable).format('YYYY-MM-DD'),
+        timestamp: day.date.timestamp,
+        fajr: day.timings.Fajr,
+        sunrise: day.timings.Sunrise,
+        dhuhr: day.timings.Dhuhr,
+        asr: day.timings.Asr,
+        maghrib: day.timings.Maghrib,
+        isha: day.timings.Isha,
+      }));
+      await prayertime.deleteMany({}); // Clear the collection
+      await prayertime.insertMany(prayerTimes);
 
-      console.error(error);
-     return res.status(500).json({status:500,message:"unsuccesful",err:error})
+      // Respond with events and prayer time for the current day
+      const prayerTime = await prayertime.findOne({ date: currentDate });
+      res.json({
+        status: 'success',
+        message: 'Events and prayer time for the current day',
+        data: {
+          events,
+          prayerTime,
+        },
+      });
     }
-  },
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
+  }
+},
+
+
 
   editProfile: async (req, res) => {
     try {
@@ -641,12 +660,78 @@ getuserpayment:(req, res) => {
 //     message: 'Current and past payments retrieved successfully',
 //     payments: payment
 //   });
-// }
+// },
 
 
-
-
-
-
-
+ getPrayerTimesForMonth:async(req, res) =>{
+  
+ 
+    try {
+      // Check if prayer times for the current month are available in the database
+      const currentDate = moment().startOf('month').format('YYYY-MM-DD');
+      const prayerTime = await prayertime.findOne({ date: currentDate });
+  
+      if (prayerTime) {
+        // If prayer times are available, respond with prayer times for the whole month
+        const month = moment().startOf('month');
+        const prayerTimes = await prayertime.find({});
+        res.json({
+          status: 'success',
+          message: 'Prayer times for the whole month',
+          data: {
+            prayerTimes,
+          },
+        });
+      } else {
+        // If prayer times are not available, fetch prayer times for the whole month from the API
+        const url = `https://api.aladhan.com/v1/calendarByCity?city=Kochi&country=India&method=2`;
+        let response;
+        try {
+          response = await axios.get(url);
+        } catch (error) {
+          throw new Error('Failed to fetch prayer times from the API');
+        }
+  
+        // Save prayer times to the database
+        const prayerTimes = response.data.data.map((day) => ({
+          date: moment.parseZone(day.date.readable).format('YYYY-MM-DD'),
+          timestamp: day.date.timestamp,
+          fajr: day.timings.Fajr,
+          sunrise: day.timings.Sunrise,
+          dhuhr: day.timings.Dhuhr,
+          asr: day.timings.Asr,
+          maghrib: day.timings.Maghrib,
+          isha: day.timings.Isha,
+        }));
+        await prayertime.deleteMany({}); // Clear the collection
+        await prayertime.insertMany(prayerTimes);
+  
+        // Respond with prayer times for the whole month
+        const month = moment().startOf('month');
+        const prayerTimesForMonth = await prayertime.find({});
+        res.json({
+          status: 'success',
+          message: 'Prayer times for the whole month saved and send',
+          data: {
+            prayerTimes: prayerTimesForMonth,
+          },
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error',
+      });
+    }
+  }
+  
 }
+
+
+
+
+
+
+
+
