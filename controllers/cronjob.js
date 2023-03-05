@@ -1,40 +1,31 @@
 const cron = require('node-cron');
 const { User, payments } = require('../models/usermodel');
+const { generatePaymentSchemasForUsers } = require('./usercontrol');
 
+// Schedule the job to run at the start of each month (on the first day of the month at 00:00)
+cron.schedule('0 0 1 * *', async () => {
+    console.log('Generating payment schemas for users...');
+    await generatePaymentSchemasForUsers();
+    console.log('Payment schemas generated!');
+  });
 
-// Schedule a job to run at the start of every year
-cron.schedule('0 0 1 1 *', async () => {
-  try {
-    const currentYear = new Date().getFullYear();
-    const users = await User.find({});
-
-    for (const user of users) {
-      const payment = await Payment.findOne({ user: user._id, year: currentYear });
-
-      if (!payment) {
-        const newPayment = new payments({
-            user: user._id,
-            year: currentYear,
-            months: [
-              { month: "jan", status: "pending"},
-              { month: "feb", status: "pending"},
-              { month: "mar", status: "pending"},
-              { month: "apr", status: "pending"},
-              { month: "may", status: "pending"},
-              { month: "jun", status: "pending"},
-              { month: "jul", status: "pending"},
-              { month: "aug", status: "pending"},
-              { month: "sep", status: "pending"},
-              { month: "oct", status: "pending"},
-              { month: "nov", status: "pending"},
-              { month: "dec", status: "pending"},
-            ],
-          });
-
-        await newPayment.save();
-      }
+  cron.schedule('0 0 31 * *', async () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    const pendingPayments = await payments.find({ year: currentYear, month: currentMonth, status: 'pending' });
+    for (const payment of pendingPayments) {
+      payment.status = 'due';
+      await payment.save();
     }
-  } catch (error) {
-    console.error(error);
-  }
-});
+    console.log(`Updated ${pendingPayments.length} payments to due status for month ${currentMonth} and year ${currentYear}`);
+  });
+  
+
+
+
+
+
+  
+
+

@@ -618,49 +618,7 @@ getuserpayment:(req, res) => {
 },
 
 
-//  getCurrentAndPastPayments:async(req, res)=> {
-//   const userId = req.query.userId;
 
-//   const currentYear = new Date().getFullYear();
-//   const currentMonth = new Date().getMonth() + 1;
-//   const lastYear = currentYear - 1;
-
-//   // Check if there are previous years in the database
-//   const previousYears = await payments.distinct('year', { user: userId, year: { $lt: currentYear } });
-
-//   // Array of months from current month to January of the current year
-//   const currentYearMonths = [];
-//   for (let i = currentMonth; i >= 1; i--) {
-//     currentYearMonths.push({ month: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i - 1], year: currentYear });
-//   }
-
-//   // Array of months from December of last year to January of last year
-//   const lastYearMonths = [];
-//   for (let i = 11; i >= 0; i--) {
-//     lastYearMonths.push({ month: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i], year: lastYear });
-//   }
-
-//   // Combine the two arrays if there are previous years, otherwise use the current year's months
-//   const months = previousYears.length > 0 ? currentYearMonths.concat(lastYearMonths) : currentYearMonths;
-
-//   // Query the database
-//   const payment = await payments.find({
-//     user: userId,
-//     $or: months.map(month => ({ year: month.year, 'months.month': month.month }))
-//   });
-
-//   // Check if payments are empty
-//   if (payment.length === 0) {
-//     return res.status(404).json({ status: 'error', message: 'No payments found' });
-//   }
-
-//   // Return the result object
-//   return res.status(200).json({
-//     status: 'success',
-//     message: 'Current and past payments retrieved successfully',
-//     payments: payment
-//   });
-// },
 
 
  getPrayerTimesForMonth:async(req, res) =>{
@@ -724,7 +682,75 @@ getuserpayment:(req, res) => {
         message: 'Internal server error',
       });
     }
+  },
+
+  generatePaymentSchemasForUsers:async (req,res)=> {
+    const users = await User.find();
+  
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+  
+    for (const user of users) {
+      const existingPayment = await payments.findOne({ user: user._id, year: currentYear, month: currentMonth });
+      if (!existingPayment) {
+        const payment = new payments({
+          user: user._id,
+          year: currentYear,
+          month: currentMonth,
+          status: 'pending'
+        });
+        await payment.save();
+      }
+    }
+    res.send("done")
+  },
+  getPaymentStatus : async (req, res) => {
+    try {
+      const userId = req.body.userId;
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+  
+      const currentMonthPaymentData = await payments.findOne({ user: userId, month: currentMonth, year: currentYear });
+      const previousMonthPaymentData = await payments.findOne({ user: userId, month: previousMonth, year: previousYear });
+  
+      if (!currentMonthPaymentData && !previousMonthPaymentData) {
+        return res.status(404).json({ message: 'Payment data not found for current and previous month', status: 'error' });
+      }
+  
+      const paymentData = {
+        currentMonth: currentMonthPaymentData ? currentMonthPaymentData : { message: 'Payment data not found for current month', status: 'info' },
+        previousMonth: previousMonthPaymentData ? previousMonthPaymentData : { message: 'Payment data not found for previous month', status: 'info' }
+      };
+  
+      res.json({ message: 'Payment data found', status: 'success', data: paymentData });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching payment data', status: 'error' });
+    }
+  },
+
+ 
+
+ getAllPaymentStatuses:async(req, res) =>{
+  try {
+    const userId = req.body.userId;
+    const paymentStatuses = await payments.find({ user: userId }).sort({ year: -1, month: -1 });
+    if (!paymentStatuses) {
+      return res.status(404).json({ message: 'No payment statuses found for this user', status: 'error' });
+    }
+    return res.status(200).json({ paymentStatuses: paymentStatuses, message: 'Payment statuses found', status: 'success' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error retrieving payment statuses', status: 'error' });
   }
+}
+
+  
+  
+  
   
 }
 

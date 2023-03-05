@@ -49,25 +49,32 @@ const PaymentStatusSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: true
   },
   year: {
     type: Number,
-    required: true,
+    required: true
   },
-  months: [{
-    month: {
-      type: String,
-      enum: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['default', 'pending', 'due', 'paid'],
-      default: 'default',
-      required: true,
-    }
-  }],
+  month: {
+    type: Number,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true,
+    default:1000
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'paid', 'due'],
+    default: 'pending'
+  },
+  paidOn: {
+    type: Date,
+    default: null
+  }
+}, {
+  timestamps: true
 });
 
 
