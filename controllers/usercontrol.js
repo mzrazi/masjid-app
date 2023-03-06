@@ -195,11 +195,10 @@ viewevents:async(req, res)=> {
       res.json({
         status: 'success',
         message: 'Events and prayer time for the current day',
-        data: {
           events,
           prayerTime,
-        },
-      });
+        
+      })
     } else {
       // If prayer time is not available, fetch prayer times for the whole month from the API
       const url = `https://api.aladhan.com/v1/calendarByCity?city=Kochi&country=India&method=2`;
@@ -229,10 +228,9 @@ viewevents:async(req, res)=> {
       res.json({
         status: 'success',
         message: 'Events and prayer time for the current day',
-        data: {
           events,
           prayerTime,
-        },
+        
       });
     }
   } catch (error) {
