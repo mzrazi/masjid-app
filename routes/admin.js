@@ -140,6 +140,8 @@ router.post('/save-image', upload.single('file'), function(req, res) {
 router.get('/announcements',async(req,res)=>{
 
  var users= await User.find({emailverified:true}).exec()
+
+
   res.render('admin/announcements',{admin:true,users})
 })
 
@@ -215,7 +217,7 @@ router.post('/send-notification', async (req, res) => {
       // Find the specific user and retrieve their token
       const user = await User.findOne({ _id: selectedUsers });
       if (!user) throw new Error('User not found');
-      tokens = [user.tokens];
+      tokens = user.tokens;
     }
 
     if (tokens.length === 0) {
@@ -223,10 +225,12 @@ router.post('/send-notification', async (req, res) => {
     }
 
     // Remove any invalid tokens
+
+ 
     const response = await admin.messaging().sendMulticast({
       tokens,
       notification: {
-        title,
+        title:title,
         body: message,
       },
     });
@@ -250,10 +254,7 @@ router.post('/send-notification', async (req, res) => {
     announce(req.body);
 
     // Render announcement page if notification sent successfully
-    res.render('admin/announcements', {
-      title: 'Announcement Sent',
-      message: 'Notification sent successfully',
-    });
+    res.redirect('/admin/announcements');
   } catch (error) {
     console.error(error);
     // Render error page with appropriate error message

@@ -11,6 +11,7 @@ const gallery=require("../models/gallerymodel")
 const { v4: uuidv4 } = require('uuid');
 const prayertime=require("../models/prayertimemodel")
 const moment = require('moment');
+const announcemodel = require('../models/announcemodel');
 
 module.exports={
   createUser: async (req, res) => {
@@ -753,6 +754,30 @@ getuserpayment:(req, res) => {
     return res.status(500).json({ message: 'Error retrieving payment statuses', status: 'error' });
   }
 },
+
+
+getAllNotifications:async(req,res)=>{
+  
+    const { userId } = req.body;
+  
+    try {
+      const announcements = await announcemodel
+        .find({ $or: [{ user: userId }, { user: 'all' }] })
+        .sort({ createdAt: -1 })
+        .exec();
+  
+      if (announcements.length === 0) {
+        return res.status(404).json({ success: false, message: 'notifications not found for user' });
+      }
+  
+      return res.status(200).json({ success: true, data: announcements });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ success: false, message: 'Error fetching notifications' });
+    }
+  }
+  
+
 
 
 
