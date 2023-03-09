@@ -1,3 +1,4 @@
+const announcemodel = require("../models/announcemodel");
 const event = require("../models/event")
 
 
@@ -43,10 +44,10 @@ module.exports={
 
   announce:(data)=>{
     
-    const { title, message } = data;
+    const { title, message,selectedUsers} = data;
 
   // Create a new document using the model
-  const newAnnounce = new Announce({ title, message });
+  const newAnnounce = new announcemodel({ title, message,user:selectedUsers });
 
   // Save the document to the database
   newAnnounce.save((err) => {

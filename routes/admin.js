@@ -3,13 +3,21 @@ var router = express.Router();
 var multer = require('multer');
 var mongoose=require('mongoose')
 var event=require("../models/event");
-const { viewevents, getevent } = require('../controllers/admincontrol');
+const { viewevents, getevent, announce } = require('../controllers/admincontrol');
 const json = require('json');
 const path=require('path')
 const gallery=require("../models/gallerymodel")
 const fs =require("fs")
 const announcemodel=require("../models/announcemodel");
 const { Family, User, payments } = require('../models/usermodel');
+const admin = require('firebase-admin');
+
+
+const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 
 
 
@@ -129,8 +137,10 @@ router.post('/save-image', upload.single('file'), function(req, res) {
   })
 })
 
-router.get('/announcements',(req,res)=>{
-  res.render('admin/announcements',{admin:true})
+router.get('/announcements',async(req,res)=>{
+
+ var users= await User.find({emailverified:true}).exec()
+  res.render('admin/announcements',{admin:true,users})
 })
 
 router.get('/imagedelete/:id',async (req, res) => {
@@ -190,8 +200,75 @@ router.get('/members/:id',async(req,res)=>{
   res.render('admin/members',{admin:true,familymembers})
 }),
 
+router.post('/send-notification', async (req, res) => {
+  const { title, message, selectedUsers } = req.body;
+  console.log(req.body);
+  try {
+    // If "Select All" is checked, retrieve all email-verified users' tokens
+    let tokens = [];
+    if (selectedUsers === 'all') {
+      const users = await User.find({ emailverified: true });
+      console.log(users);
+      tokens = users.flatMap((user) => user.tokens);
+      console.log(tokens);
+    } else {
+      // Find the specific user and retrieve their token
+      const user = await User.findOne({ _id: selectedUsers });
+      if (!user) throw new Error('User not found');
+      tokens = [user.tokens];
+    }
 
-router.post
+    if (tokens.length === 0) {
+      throw new Error('No valid tokens found');
+    }
+
+    // Remove any invalid tokens
+    const response = await admin.messaging().sendMulticast({
+      tokens,
+      notification: {
+        title,
+        body: message,
+      },
+    });
+
+    const invalidTokens = [];
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        invalidTokens.push(tokens[idx]);
+      }
+    });
+
+    if (invalidTokens.length > 0) {
+      // Remove invalid tokens from user's tokens array
+      await User.updateMany(
+        { tokens: { $in: invalidTokens } },
+        { $pull: { tokens: { $in: invalidTokens } } }
+      );
+    }
+
+    // Call announce function only if notification is sent successfully
+    announce(req.body);
+
+    // Render announcement page if notification sent successfully
+    res.render('admin/announcements', {
+      title: 'Announcement Sent',
+      message: 'Notification sent successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    // Render error page with appropriate error message
+    if (error.code === 'messaging/invalid-argument' && error.message === 'tokens must be a non-empty array') {
+      res.render('error', { error: 'No valid tokens found' ,message:'No valid tokens found'});
+    } else {
+      res.render('error', { error: 'Internal server error',message:"error" });
+    }
+    
+  }
+});
+
+
+
+
 
 
 

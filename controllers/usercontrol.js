@@ -153,7 +153,7 @@ module.exports={
   
 
   loginUser: (req, res) => {
-    const { Email, Password } = req.body;
+    const { Email, Password, token } = req.body;
     User.findOne({ Email }, (err, user) => {
       if (err) {
         console.log(err);
@@ -172,8 +172,16 @@ module.exports={
         if (!result) {
           return res.status(401).json({status:401, message: "Incorrect password" });
         }
-       
-        return res.status(200).json({status:200, message: "Login successful", user});
+
+        // Add the token to the user's array of tokens
+        user.tokens.push(token);
+        user.save((err) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({status:500, message:"token save error",error: err });
+          }
+          return res.status(200).json({status:200, message: "Login successful", user});
+        });
       });
     });
   },
@@ -744,7 +752,10 @@ getuserpayment:(req, res) => {
     console.error(error);
     return res.status(500).json({ message: 'Error retrieving payment statuses', status: 'error' });
   }
-}
+},
+
+
+
 
   
   

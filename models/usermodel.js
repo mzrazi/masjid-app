@@ -30,19 +30,20 @@ const FamilySchema = new Schema({
   
 
   
-const userSchema = new Schema({
+  const userSchema = new Schema({
     FirstName: { type: String, required: true },
     LastName: { type: String, required: true },
     Address: { type: String, required: true },
     Phone: { type:String, required: true },
     Age:{type:String,required:true},
     Gender:{type:String,required:true},
-   Email: { type: String, required: true, unique: true },
-   Password: { type: String, required: true },
-   resetToken:{ type:String },
-   resetTokenExpiration:{type:String},
-   emailverified: { type: Boolean, default: false},
-   Family: [{ type: Schema.Types.ObjectId, ref: 'Family' }]
+    Email: { type: String, required: true, unique: true },
+    Password: { type: String, required: true },
+    resetToken:{ type:String },
+    resetTokenExpiration:{type:String},
+    emailverified: { type: Boolean, default: false},
+    Family: [{ type: Schema.Types.ObjectId, ref: 'Family' }],
+    tokens: [{ type: String,required:true }]
 })
 
 const PaymentStatusSchema = new mongoose.Schema({
