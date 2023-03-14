@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const prayertime=require("../models/prayertimemodel")
 const moment = require('moment');
 const announcemodel = require('../models/announcemodel');
+const { handleUserSignup } = require('./paymentcontrol');
 
 module.exports={
   createUser: async (req, res) => {
@@ -117,40 +118,44 @@ module.exports={
        
   
 
-  verifyEmail: (req, res) => {
-    const token = req.params.token;
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      if (err) {
-        if (err.name === "TokenExpiredError") {
-          User.findOneAndDelete({ email: decoded.Email }, (err, user) => {
+        verifyEmail: (req, res) => {
+          const token = req.params.token;
+          jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
             if (err) {
-              return res.status(500).json({ error: err, message: "Deletion error" });
+              if (err.name === "TokenExpiredError") {
+                User.findOneAndDelete({ Email: decoded.email }, (err, user) => {
+                  if (err) {
+                    return res.status(500).json({ error: err, message: "Deletion error" });
+                  }
+                  if (!user) {
+                    return res.status(401).json({ message: "User not found" });
+                  }
+                  return res.status(200).json({ status: 200, message: "User deleted due to expired token" });
+                });
+              } else {
+                return res.status(401).json({ status: 401, message: "Invalid token" });
+              }
+            } else {
+              User.findOneAndUpdate(
+                { Email: decoded.email },
+                { $set: { emailverified: true } },
+                async (err, user) => {
+                  if (err) {
+                    return res.status(500).json({ status: 500, error: err, message: "Verification error" });
+                  }
+                  if (!user) {
+                    return res.status(401).json({ status: 401, message: "User not found" });
+                  }
+                  await handleUserSignup(user); // call handleUserSignup function here
+                  return res.status(200).json({ status: 200, message: "Email verified successfully" });
+                }
+              );
             }
-            if (!user) {
-              return res.status(401).json({ message: "User not found" });
-            }
-            return res.status(200).json({status:200, message: "User deleted due to expired token" });
           });
-        } else {
-          return res.status(401).json({status:401, message: "Invalid token" });
-        }
-      }
-      User.findOneAndUpdate(
-        { Email: decoded.email },
-        { $set: { emailverified: true } },
-        (err, user) => {
-          if (err) {
-            return res.status(500).json({status:500, error: err, message: "Verification error" });
-          }
-          if (!user) {
-            return res.status(401).json({status:401, message: "User not found" });
-          }
-          return res.status(200).json({status:200, message: "Email verified successfully" });
-        }
-      );
-    });
-  },
-  
+        },
+        
+        
+        
   
 
   loginUser: (req, res) => {

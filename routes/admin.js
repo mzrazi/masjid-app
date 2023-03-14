@@ -268,6 +268,9 @@ router.post('/send-notification', async (req, res) => {
 });
 
 
+router.get('/alluser',)
+
+
 
 
 

@@ -7,6 +7,7 @@ const dbConnect = require('./config/connection');
 const exphbs = require('express-handlebars');
 const Handlebars = require('handlebars')
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+const cron = require('./controllers/cronjob')
 
 
 const bodyParser = require('body-parser');
