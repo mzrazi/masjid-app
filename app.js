@@ -8,6 +8,7 @@ const exphbs = require('express-handlebars');
 const Handlebars = require('handlebars')
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 const cron = require('./controllers/cronjob')
+const cors=require('cors')
 
 
 const bodyParser = require('body-parser');
@@ -32,7 +33,10 @@ app.engine('hbs', exphbs.engine({
 }))
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
- 
+
+
+app.use(cors());
+app.use(express.json());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
