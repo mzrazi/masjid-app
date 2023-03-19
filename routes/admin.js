@@ -12,7 +12,14 @@ const {
     geteditevent,
     getAdminNotifications,
     loginauth,
-    signupadmin
+    signupadmin,
+    getuserpay,
+    changePaymentStatus,
+    deleteNotification,
+    deleteMessage,
+    getUserDashboardData,
+    changeAdminPass,
+    changeAdminUsername
 } = require('../controllers/admincontrol');
 const json = require('json');
 const path = require('path')
@@ -219,85 +226,88 @@ router.get('/members/:id', async (req, res) => {
 }),
 
 router.post('/send-notification', async (req, res) => {
-    const {title, message, selectedUsers} = req.body;
+    const { title, message, selectedUsers } = req.body;
     console.log(req.body);
-    try { // If "Select All" is checked, retrieve all email-verified users' tokens
-        let tokens = [];
-        if (selectedUsers === 'all') {
-            const users = await User.find({emailverified: true});
-            console.log(users);
-            tokens = users.flatMap((user) => user.tokens);
-            console.log(tokens);
-        } else { // Find the specific user and retrieve their token
-            const user = await User.findOne({_id: selectedUsers});
-            if (! user) 
-                throw new Error('User not found');
-            
-
-            tokens = user.tokens;
+  
+    try {
+      // If "Select All" is checked, retrieve all email-verified users' tokens
+      let tokens = [];
+      if (selectedUsers === 'all') {
+        const users = await User.find({ emailverified: true });
+        tokens = users.flatMap((user) => user.tokens);
+      } else { // Find the specific user and retrieve their token
+        const user = await User.findOne({ _id: selectedUsers });
+        if (!user) {
+          throw new Error('User not found');
         }
-
-        if (tokens.length === 0) {
-            throw new Error('No valid tokens found');
+        tokens = user.tokens;
+      }
+  
+      if (tokens.length === 0) {
+        throw new Error('No valid tokens found');
+      }
+  
+      // Remove any invalid tokens
+      const response = await admin.messaging().sendMulticast({
+        tokens,
+        notification: {
+          title: title,
+          body: message
         }
-
-        // Remove any invalid tokens
-
-
-        const response = await admin.messaging().sendMulticast({
-            tokens,
-            notification: {
-                title: title,
-                body: message
+      });
+  
+      const invalidTokens = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          invalidTokens.push(tokens[idx]);
+        }
+      });
+  
+      if (invalidTokens.length > 0) { // Remove invalid tokens from user's tokens array
+        await User.updateMany({
+          tokens: {
+            $in: invalidTokens
+          }
+        }, {
+          $pull: {
+            tokens: {
+              $in: invalidTokens
             }
+          }
         });
-
-        const invalidTokens = [];
-        response.responses.forEach((resp, idx) => {
-            if (!resp.success) {
-                invalidTokens.push(tokens[idx]);
-            }
-        });
-
-        if (invalidTokens.length > 0) { // Remove invalid tokens from user's tokens array
-            await User.updateMany({
-                tokens: {
-                    $in: invalidTokens
-                }
-            }, {
-                $pull: {
-                    tokens: {
-                        $in: invalidTokens
-                    }
-                }
-            });
-        }
-
-        // Call announce function only if notification is sent successfully
-        announce(req.body);
-
-        // Render announcement page if notification sent successfully
-        res.redirect('/admin/announcements');
+      }
+  
+      // Call announce function only if notification is sent successfully
+      announce(req.body);
+  
+      // Send JSON response if notification sent successfully
+      res.json({
+        message: 'Notification sent successfully'
+      });
     } catch (error) {
-        console.error(error);
-        // Render error page with appropriate error message
-        if (error.code === 'messaging/invalid-argument' && error.message === 'tokens must be a non-empty array') {
-            res.render('error', {
-                error: 'No valid tokens found',
-                message: 'No valid tokens found'
-            });
-        } else {
-            res.render('error', {
-                error: 'Internal server error',
-                message: "error"
-            });
-        }
-
+      console.error(error);
+  
+      // Send appropriate error message in JSON response
+      if (error.code === 'messaging/invalid-argument' && error.message === 'tokens must be a non-empty array') {
+        res.status(400).json({
+          error: 'No valid tokens found',
+          message: 'No valid tokens found'
+        });
+      } else if (error.message === 'User not found') {
+        res.status(404).json({
+          error: 'User not found',
+          message: 'User not found'
+        });
+      } else {
+        res.status(500).json({
+          error: 'Internal server error',
+          message: 'An internal server error occurred'
+        });
+      }
     }
-});
-
-
-router.get('/alluser', async (req, res) => {
+  });
+  
+router.get('/all-users', async (req, res) => {
     try {
         const users = await User.find({emailverified:true});
         res.json(users);
@@ -345,7 +355,13 @@ router.get('/admin-notifications', getAdminNotifications)
 router.post('/authlogin',loginauth)
 
 router.post("/admin-signup",signupadmin)
-
+router.get("/user-payments/:id",getuserpay)
+router.put("/change-status/:id",changePaymentStatus)
+router.delete('/delete-notification/:id',deleteNotification)
+router.delete('/delete-message/:id',deleteMessage)
+router.get('/dashboard',getUserDashboardData)
+router.put("/change-admin-password",changeAdminPass)
+router.put('/change-admin-username', changeAdminUsername)
 
 
 

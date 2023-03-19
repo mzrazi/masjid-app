@@ -1,7 +1,7 @@
 const announcemodel = require("../models/announcemodel");
 const event = require("../models/event");
 const messagemodel = require("../models/messagemodel");
-const { Family } = require("../models/usermodel");
+const { Family, User, payments } = require("../models/usermodel");
 const admin =require("../models/adminmodel")
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -83,8 +83,8 @@ module.exports={
   getmessages:async(req,res)=>{
     try {
       const messages = await messagemodel.find({ })
-      console.log(messages);
-      res.json({ messages });
+   
+      res.status(200).json({ messages });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server error');
@@ -111,7 +111,7 @@ module.exports={
         createdAt: notification.createdAt.toLocaleString(),
         updatedAt: notification.updatedAt.toLocaleString(),
       }));
-      console.log(formattedNotifications);
+      
       res.status(200).json({ notifications: formattedNotifications });
     } catch (error) {
       console.error(error);
@@ -143,7 +143,7 @@ module.exports={
         };
         const token = jwt.sign(payload,process.env.SECRET_KEY, { expiresIn: '1h' });
         console.log(token);
-        res.status(200).json({ status: true, message: "Login successful", token: token });
+        res.status(200).json({ status: true, message: "Login successful", token: token,id:admin._id });
       });
     });
   },
@@ -163,17 +163,189 @@ signupadmin:async(req,res)=>{
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
-}
-}
+},
 
-
+getuserpay:(req, res) => {
+  const userId = req.params.id;
+  const currentYear = new Date().getFullYear();
+console.log();
   
 
-
-
+  User.findById(userId, (err, user) => {
+    if (err) {
+      return res.status(500).json({ status: 500, message: "Error retrieving user" });
+    }
+    if (!user) {
+      return res.status(404).json({ status: 404, message: "User not found" });
+    }
+  
+    payments.find({ user: userId, year: currentYear }).exec((err, payment) => {
+      if (err) {
+        return res.status(500).json({ status: 500, message: "Error retrieving payment" });
+      }
+  
+      const paymentsWithMonthName = payment.map(p => {
+        const date = new Date(p.createdAt);
+        const monthName = date.toLocaleString('default', { month: 'long' }); // Get month name
+        return { ...p._doc, month: monthName }; // Return payment object with month name added
+      });
+     
+      return res.status(200).json({ status: 200, message: "Success", paymentsWithMonthName ,user});
+    });
+  });
 
   
-  
-  
+},
+changePaymentStatus: (req, res) => {
+  const id = req.params.id;
+  const status = req.body.status;
 
+  payments.findByIdAndUpdate(id, { status: status }, { new: true })
+    .then(updatedPayment => {
+      res.status(200).json(updatedPayment);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ message: "Error updating payment status" });
+    });
+},
+
+deleteMessage:async(req,res)=>{
+  const { id } = req.params;
+  try {
+    const deletedMessage = await messagemodel.findByIdAndDelete(id);
+    if (!deletedMessage) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+    return res.json({ message: "Message deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+},
+
+deleteNotification:async(req,res)=>{
+
+  const { id } = req.params;
+  try {
+    const deletednotification = await announcemodel.findByIdAndDelete(id);
+    if (!deletednotification) {
+      return res.status(404).json({ error: " not found" });
+    }
+    return res.json({ message: " deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+},
+
+ getUserDashboardData :async (req, res) => {
+  try {
+    const userCount = await User.countDocuments();
+    const familyCount = await Family.countDocuments();
+    const messageCount = await messagemodel.countDocuments();
+    const notificationCount = await announcemodel.countDocuments();
+    const eventCount = await event.countDocuments();
+    console.log(eventCount);
+    res.status(200).json({
+      userCount,
+      familyCount,
+      messageCount,
+      notificationCount,
+      eventCount,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching dashboard data" });
+  }
+},
+changeAdminPass:async(req,res)=>{
+ 
+    try {
+      console.log(req.body);
       
+  
+      var id = req.body.userId;
+      var Password=req.body.currentPassword
+      var newPassword = req.body.newPassword;
+  
+      var curuser = await admin.findOne({ _id:id })
+    
+      var hash = curuser.password;
+      console.log(hash);
+      
+  
+      // Check if the current password provided by the user matches the password stored in the database
+      const isPasswordCorrect = await bcrypt.compare(Password, hash);
+      console.log(isPasswordCorrect);
+      if (!isPasswordCorrect) {
+        return res.status(404).json({status:404,
+          message: "current password is incorrect"
+        });
+      }
+  
+      // Hash the new password
+      var hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      // Update the user's password in the database
+      await admin.findOneAndUpdate(
+        { _id:id },
+        { $set: { password:hashedPassword } },
+        { new: true }
+      );
+  
+      res.status(200).json({status:200,
+        message: "password updated succesfully"
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+       status:500, message: "password update error"});
+    }
+  },
+  changeAdminUsername: async (req, res) => {
+    try {
+      console.log("called");
+      // Find user by id
+      var {username}= req.body
+      console.log(username);
+      
+      var ID= req.body.userId
+  
+      const user = await admin.findById(ID)
+      console.log(user);
+      if (!user) {
+        return res.status(404).json({status:404, message: "user not found" });
+      }
+  
+      // Update user details
+      const updatedUser = await admin.findOneAndUpdate(
+        { _id: ID },
+        { $set:{username}},
+        { new: true }
+      );
+  
+      return res.status(200).json({status:200, message: "Profile updated successfully",updatedUser});
+    } catch (error) {
+      console.error(error);
+      return  res.status(500).json({status:500,message:"error updating profile",err:error});
+    }
+  }
+  ,
+
+
+}
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+

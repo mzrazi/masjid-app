@@ -46,7 +46,7 @@ module.exports={
           secure: false,
           auth: {
             user: process.env.MAILER_EMAIL,
-            pass: process.env.MAILER_PASS
+            pass: process.env.MAILER_PASS 
           }
         });
         const mailOptions = {
