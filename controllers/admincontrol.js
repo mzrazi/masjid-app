@@ -330,11 +330,25 @@ changeAdminPass:async(req,res)=>{
       console.error(error);
       return  res.status(500).json({status:500,message:"error updating profile",err:error});
     }
+  },
+  userDelete:async(req,res)=>{
+    const { id } = req.params;
+    try {
+      const deletedUser = await User.findByIdAndDelete(id);
+      if (!deletedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      return res.json({ message: "Userdeleted successfully" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  },
+
   }
-  ,
 
 
-}
+
 
 
 

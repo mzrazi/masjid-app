@@ -19,7 +19,8 @@ const {
     deleteMessage,
     getUserDashboardData,
     changeAdminPass,
-    changeAdminUsername
+    changeAdminUsername,
+    userDelete
 } = require('../controllers/admincontrol');
 const json = require('json');
 const path = require('path')
@@ -362,6 +363,7 @@ router.delete('/delete-message/:id',deleteMessage)
 router.get('/dashboard',getUserDashboardData)
 router.put("/change-admin-password",changeAdminPass)
 router.put('/change-admin-username', changeAdminUsername)
+router.delete('/delete-user/:id',userDelete)
 
 
 
