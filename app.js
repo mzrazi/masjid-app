@@ -4,36 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const dbConnect = require('./config/connection');
-const exphbs = require('express-handlebars');
-const Handlebars = require('handlebars')
-const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
-const cron = require('./controllers/cronjob')
-const cors=require('cors')
-
+const cors = require('cors');
 
 const bodyParser = require('body-parser');
 
-require('dotenv').config()
+require('dotenv').config();
 var app = express();
 app.use(bodyParser.json());
 
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
-
-
-// view engine setup
-app.engine('hbs', exphbs.engine({
-  extname: 'hbs',
-  defaultLayout: 'layout',
-  layoutsDir: __dirname + '/views/layouts',
-  partialsDir: __dirname + '/views/partials',
-  runtimeOptions:{allowProtoPropertiesByDefault:true,
-    allowedProtoMethodsByDefault:true}
- 
-}))
-app.set('view engine', 'hbs');
-app.set('views', __dirname + '/views');
-
 
 app.use(cors());
 app.use(express.json());
@@ -41,8 +21,9 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-dbConnect()
+app.use(express.static(path.join(__dirname, 'frontend-masjid/build')));
+
+dbConnect();
 app.use('/', userRouter);
 app.use('/admin', adminRouter);
 
@@ -61,5 +42,11 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
-}); 
+});
+
+// serve React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname+'/frontend-masjid/build/index.html'));
+});
+
 module.exports = app;
