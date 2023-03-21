@@ -29,6 +29,19 @@ dbConnect();
 app.use('/api', userRouter);
 app.use('/api/admin', adminRouter);
 
+// serve image files
+app.get('/images/:filename', function(req, res, next) {
+  const filePath = path.join(__dirname, 'public/images', req.params.filename);
+  fs.readFile(filePath, function(err, data) {
+    if (err) {
+      return next(createError(404));
+    }
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.send(data);
+  });
+});
+
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
