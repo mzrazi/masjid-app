@@ -96,7 +96,7 @@ module.exports={
       console.log(id);
       const events = await event.findById(id);
       console.log(events);
-      events.imagePath = `http://${process.env.APP_URL}${events.imagePath}`;
+      events.imagePath = `https://${process.env.APP_URL}${events.imagePath}`;
       res.status(200).json({ events });
     } catch (error) {
       console.error(error);

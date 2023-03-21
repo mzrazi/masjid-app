@@ -197,7 +197,7 @@ viewevents:async(req, res)=> {
     // Retrieve events from the database
     const events = await event.find({});
     events.forEach((event) => {
-      event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
+      event.imagePath = `https://${process.env.APP_URL}${event.imagePath}`;
     });
 
     // Check if current day's prayer time is available in the database
@@ -488,7 +488,7 @@ getimages:async(req,res)=>{
   try{
   var images= await gallery.find({});
   images.forEach(image => {
-    image.imagePath = `http://${process.env.APP_URL}${image.imagePath}`;
+    image.imagePath = `https://${process.env.APP_URL}${image.imagePath}`;
   });
   res.status(200).json({status:200,message:"succesful",images})
   

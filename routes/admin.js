@@ -99,7 +99,7 @@ router.post('/save-event', upload.single('image'), function (req, res) {
 router.get('/eventsview', (req, res) => {
     viewevents().then(events => {
       events.forEach((event) => {
-        event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
+        event.imagePath = `https://${process.env.APP_URL}${event.imagePath}`;
       });
 
         res.status(200).json({events});
