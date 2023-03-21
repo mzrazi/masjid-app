@@ -22,7 +22,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'frontend-masjid/build')));
-
+// serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+ 
 dbConnect();
 app.use('/api', userRouter);
 app.use('/api/admin', adminRouter);
