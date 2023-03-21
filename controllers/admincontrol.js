@@ -168,8 +168,6 @@ signupadmin:async(req,res)=>{
 getuserpay:(req, res) => {
   const userId = req.params.id;
   const currentYear = new Date().getFullYear();
-console.log();
-  
 
   User.findById(userId, (err, user) => {
     if (err) {
@@ -183,19 +181,21 @@ console.log();
       if (err) {
         return res.status(500).json({ status: 500, message: "Error retrieving payment" });
       }
+      console.log(payment);
   
       const paymentsWithMonthName = payment.map(p => {
-        const date = new Date(p.createdAt);
+        const date = new Date(p.year, p.month - 1); // Convert month number to month index (0-based)
         const monthName = date.toLocaleString('default', { month: 'long' }); // Get month name
         return { ...p._doc, month: monthName }; // Return payment object with month name added
       });
+
+      console.log(paymentsWithMonthName);
      
       return res.status(200).json({ status: 200, message: "Success", paymentsWithMonthName ,user});
     });
   });
-
-  
 },
+
 changePaymentStatus: (req, res) => {
   const id = req.params.id;
   const status = req.body.status;
