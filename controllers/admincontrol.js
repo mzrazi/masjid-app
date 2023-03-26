@@ -80,16 +80,27 @@ module.exports={
     }
   },
 
-  getmessages:async(req,res)=>{
+  getmessages: async (req, res) => {
     try {
-      const messages = await messagemodel.find({ })
-   
-      res.status(200).json({ messages });
+      const messages = await messagemodel.find({}).sort({createdAt:-1});
+      console.log(messages);
+      const messagesWithFullname = await Promise.all(
+        messages.map(async (message) => {
+          const user = await User.findOne({ Email: message.useremail });
+          console.log(user);
+          const fullname = user.FirstName + ' ' + user.LastName;
+          const createdAt = message.createdAt.toLocaleString();
+          return { ...message.toObject(), fullname ,createdAt};
+        })
+      );
+      res.status(200).json({ messages: messagesWithFullname });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server error');
     }
   },
+  
+  
   geteditevent: async (req, res) => {
     try {
       const id = req.params.id;
@@ -335,6 +346,10 @@ changeAdminPass:async(req,res)=>{
     const { id } = req.params;
     try {
       const deletedUser = await User.findByIdAndDelete(id);
+      await payments.findOneAndDelete({user:id})
+      await Family.findOneAndDelete({User:id})
+      await announcemodel.findOneAndDelete({user:id})
+      await messagemodel.findOneAndDelete({useremail:deletedUser.Email})
       if (!deletedUser) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -344,6 +359,21 @@ changeAdminPass:async(req,res)=>{
       return res.status(500).json({ error: "Server error" });
     }
   },
+  getUserMessage:async(req,res)=>{
+    try {
+      const {id}=req.params
+      const message=await messagemodel.findById(id)
+      if(!message){
+        return res.status(404).json({status:404,message:"not found"})
+      }
+      res.status(200).json({status:200,message:"succes",message})
+      
+    } catch (error) {
+
+      return res.status(500).json({status:500,message:"server error"})
+      
+    }
+  }
 
   }
 

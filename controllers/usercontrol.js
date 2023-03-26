@@ -53,7 +53,7 @@ module.exports={
           from: process.env.MAILER_EMAIL,
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
+          text: `Please click the following link to verify your email address:${process.env.APP_URL}/api/verify-email/${token}`
         };
     
         await transporter.sendMail(mailOptions);
@@ -99,7 +99,7 @@ module.exports={
           from: process.env.MAILER_EMAIL,
           to: userdata.Email,
           subject: 'Verify your email address',
-          text: `Please click the following link to verify your email address:${process.env.APP_URL}/verify-email/${token}`
+          text: `Please click the following link to verify your email address:${process.env.APP_URL}/api/verify-email/${token}`
         };
         
         await transporter.sendMail(mailOptions);
@@ -414,14 +414,16 @@ viewevents:async(req, res)=> {
     });
   }
   ,
-  savemessage:(req,res)=>{
+  savemessage:async(req,res)=>{
 
     var msg=req.body
+
+    
 
     var newmessage=new message({
       title:msg.title,
       useremail:msg.email,
-      message:msg.message
+      message:msg.message,
     })
     try {
       
@@ -555,18 +557,20 @@ forgotpassword:async (req, res) => {
 
 verifytoken:async (req, res) => {
   const { resetToken } = req.params;
+  console.log("toke:"+resetToken);
 
   try {
     // Find user by reset token
     const user = await User.findOne({ resetToken, resetTokenExpiration: { $gt: Date.now() } });
+    console.log(user);
 
     // If user not found or reset token expired, redirect to forgot password page with error message
     if (!user) {
-      return res.send('error=invalid-token');
+      return res.status(404).json({status:404,message:'error=invalid-token'});
     }
     console.log(resetToken);
     // Render password reset page with reset token
-    res.render('user/reset-password', { resetToken });
+    res.status(200).json({status:200,message:'verified'});
   } catch (error) {
     console.error(error);
     return res.status(500).json({status:500, message: 'Server error' });
@@ -575,7 +579,7 @@ verifytoken:async (req, res) => {
 
 
 resetpassword:async (req, res) => {
-  const newPassword = req.body.password;
+  const newPassword = req.body.newPassword;
  const resetToken=req.params.resetToken
   console.log(newPassword);
 
@@ -599,7 +603,7 @@ resetpassword:async (req, res) => {
     await user.save();
 
     // Redirect to login page with success message
-    return res.send('password reset success');
+    return res.status(200).json({status:200,message:'password reset success'});
   } catch (error) {
     console.error(error);
     return res.status(500).json({status:500, message: 'Server error' });
