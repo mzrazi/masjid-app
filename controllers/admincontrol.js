@@ -84,13 +84,23 @@ module.exports={
     try {
       const messages = await messagemodel.find({}).sort({createdAt:-1});
       console.log(messages);
+
+   
       const messagesWithFullname = await Promise.all(
         messages.map(async (message) => {
-          const user = await User.findOne({ Email: message.useremail });
-          console.log(user);
-          const fullname = user.FirstName + ' ' + user.LastName;
-          const createdAt = message.createdAt.toLocaleString();
-          return { ...message.toObject(), fullname ,createdAt};
+          try {
+            const user = await User.findOne({ Email: message.useremail });
+            console.log(user);
+            if (!user) {
+              throw new Error('User not found');
+            }
+            const fullname = user.FirstName + ' ' + user.LastName;
+            const createdAt = message.createdAt.toLocaleString();
+            return { ...message.toObject(), fullname, createdAt };
+          } catch (error) {
+            console.error(error);
+            throw new Error('Error retrieving user information');
+          }
         })
       );
       res.status(200).json({ messages: messagesWithFullname });
@@ -99,7 +109,7 @@ module.exports={
       res.status(500).send('Server error');
     }
   },
-  
+
   
   geteditevent: async (req, res) => {
     try {
