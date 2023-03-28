@@ -89,6 +89,7 @@ module.exports={
       const messagesWithFullname = await Promise.all(
         messages.map(async (message) => {
           try {
+            console.log("user"+message.useremail);
             const user = await User.findOne({ Email: message.useremail });
             console.log(user);
             if (!user) {
@@ -383,7 +384,20 @@ changeAdminPass:async(req,res)=>{
       return res.status(500).json({status:500,message:"server error"})
       
     }
-  }
+  },  getuserdetails:(req,res)=>{
+    var {id} = req.params
+    
+    User.findById(id).exec((err, user) => {
+      if (err) {
+        return res.status(500).json({status:500, message: "Error retrieving user" });
+      }
+      if (!user) {
+        return res.status(404).json({status:404, message: "User not found" });
+      }
+      return res.status(200).json({status:200,message:"succesful", user });
+    });
+  },
+ 
 
   }
 
