@@ -5,6 +5,8 @@ const { Family, User, payments } = require("../models/usermodel");
 const admin =require("../models/adminmodel")
 var jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const prayertime=require("../models/prayertimemodel")
+const axios=require('axios')
 
 
 
@@ -224,6 +226,14 @@ changePaymentStatus: (req, res) => {
 
   payments.findByIdAndUpdate(id, { status: status }, { new: true })
     .then(updatedPayment => {
+      if (status === 'paid') {
+        // if status is updated to 'paid', update the paidOn field with current date
+        updatedPayment.paidOn = new Date().toLocaleDateString()
+      } else {
+        // if status is updated to 'due' or 'pending', set paidOn to null
+        updatedPayment.paidOn = null;
+      }
+      updatedPayment.save();
       res.status(200).json(updatedPayment);
     })
     .catch(err => {
@@ -231,6 +241,7 @@ changePaymentStatus: (req, res) => {
       res.status(500).json({ message: "Error updating payment status" });
     });
 },
+
 
 deleteMessage:async(req,res)=>{
   const { id } = req.params;
@@ -397,10 +408,72 @@ changeAdminPass:async(req,res)=>{
       return res.status(200).json({status:200,message:"succesful", user });
     });
   },
- 
 
+
+// Get prayer times for the current month
+ getPrayerTimesForMonthcron : async () => {
+  try {
+    const currentDate = new Date();
+    const day = currentDate.getDate().toString().padStart(2, '0');
+    const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(currentDate);
+    const year = currentDate.getFullYear();
+    const formattedDate = `${day} ${month} ${year}`;
+    console.log(formattedDate);
+    
+    
+    
+    const prayerTime = await prayertime.findOne({ date: formattedDate });
+    
+
+    console.log(prayerTime);
+
+    if (prayerTime) {
+      // If prayer times are available, respond with prayer times for the whole month
+     
+      console.log("already exist");
+      
+    } else {
+      
+      
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const url = `https://api.aladhan.com/v1/calendarByCity/${year}/${month}?city=Kochi&country=India&method=2`;
+      
+      const response = await axios.get(url);
+
+      // Save prayer times to the database
+      const prayerTimes = response.data.data.map((day) => {
+        const date = day.date.readable
+        
+        return {
+          date: date,
+          timestamp: day.date.timestamp,
+          fajr: day.timings.Fajr,
+          sunrise: day.timings.Sunrise,
+          dhuhr: day.timings.Dhuhr,
+          asr: day.timings.Asr,
+          maghrib: day.timings.Maghrib,
+          isha: day.timings.Isha,
+        };
+      });
+      console.log(month);
+      if (month === 1) {
+        console.log("deleted");
+        await prayertime.deleteMany({});
+      }
+
+      await prayertime.insertMany(prayerTimes);
+
+      // Respond with prayer times for the whole month
+      const prayerTimesForMonth = await prayertime.find({});
+      console.log("Fetched prayer times from API");
+      return prayerTimesForMonth;
+    }
+  } catch (error) {
+    console.error(error);
   }
-
+}
+}
 
 
 

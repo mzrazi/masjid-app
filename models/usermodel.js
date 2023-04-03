@@ -71,7 +71,7 @@ const PaymentStatusSchema = new mongoose.Schema({
     default: 'pending'
   },
   paidOn: {
-    type: Date,
+    type: String,
     default: null
   }
 }, {
