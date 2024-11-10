@@ -120,7 +120,7 @@ module.exports={
       console.log(id);
       const events = await event.findById(id);
       console.log(events);
-      events.imagePath = `https://${process.env.APP_URL}${events.imagePath}`;
+      events.imagePath = `http://${process.env.APP_URL}${events.imagePath}`;
       res.status(200).json({ events });
     } catch (error) {
       console.error(error);
@@ -207,7 +207,7 @@ getuserpay:(req, res) => {
       }
       console.log(payment);
   
-      const paymentsWithMonthName = payment.map(p => {
+      const paymentsWithMonthName = payment.map(p => { 
         const date = new Date(p.year, p.month - 1); // Convert month number to month index (0-based)
         const monthName = date.toLocaleString('default', { month: 'long' }); // Get month name
         return { ...p._doc, month: monthName }; // Return payment object with month name added

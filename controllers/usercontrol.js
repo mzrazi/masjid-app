@@ -14,7 +14,13 @@ const moment = require('moment');
 const announcemodel = require('../models/announcemodel');
 const { handleUserSignup } = require('./paymentcontrol');
 
+ 
 module.exports={
+
+
+
+
+  
   createUser: async (req, res) => {
     try {
       const userdata = req.body;
@@ -159,7 +165,9 @@ module.exports={
   
 
   loginUser: (req, res) => {
-    const { Email, Password, token } = req.body;
+    const { Email, Password} = req.body;
+    console.log(Email)
+    console.log(Password)
     User.findOne({ Email }, (err, user) => {
       if (err) {
         console.log(err);
@@ -179,8 +187,8 @@ module.exports={
           return res.status(401).json({status:401, message: "Incorrect password" });
         }
 
-        // Add the token to the user's array of tokens
-        user.tokens.push(token);
+      
+        
         user.save((err) => {
           if (err) {
             console.log(err);
@@ -197,7 +205,7 @@ viewevents:async(req, res)=> {
     // Retrieve events from the database
     const events = await event.find({});
     events.forEach((event) => {
-      event.imagePath = `https://${process.env.APP_URL}${event.imagePath}`;
+      event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
     });
 
     // Check if current day's prayer time is available in the database
@@ -490,7 +498,7 @@ getimages:async(req,res)=>{
   try{
   var images= await gallery.find({});
   images.forEach(image => {
-    image.imagePath = `https://${process.env.APP_URL}${image.imagePath}`;
+    image.imagePath = `http://${process.env.APP_URL}${image.imagePath}`;
   });
   res.status(200).json({status:200,message:"succesful",images})
   
