@@ -5,7 +5,7 @@ var gallerySchema = new mongoose.Schema({
     imagePath:{type:String,
         required:true,
         unique:true
-      },
+      }, 
 });
 
 //Export the model

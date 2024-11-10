@@ -34,8 +34,8 @@ const admin = require('firebase-admin');
 const { getAllNotifications } = require('../controllers/usercontrol');
 
 
-const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-admin.initializeApp({credential: admin.credential.cert(serviceAccount)});
+// const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+// admin.initializeApp({credential: admin.credential.cert(serviceAccount)});
 
 
 var storage = multer.diskStorage({
@@ -101,7 +101,7 @@ router.post('/save-event', upload.single('image'), function (req, res) {
 router.get('/eventsview', (req, res) => {
     viewevents().then(events => {
       events.forEach((event) => {
-        event.imagePath = `https://${process.env.APP_URL}${event.imagePath}`;
+        event.imagePath = `http://${process.env.APP_URL}${event.imagePath}`;
       });
 
         res.status(200).json({events});
